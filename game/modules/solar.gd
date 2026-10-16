@@ -53,14 +53,17 @@ func _ready() -> void:
 	roof.size = Vector3(5.8, 1.6, 4.6)
 	Kit.part(self, roof, Vector3(0, 3.8, -5), Kit.mat(Color("ff8c1a")))
 	Kit.box(self, Vector3(1.0, 1.7, 0.1), Vector3(0, 0.85, -2.98), Kit.mat(Color("1f6fff")))
+	Kit.sphere(self, 0.07, Vector3(0.32, 0.85, -2.9), Kit.mat(Game.GOLD, 0.0, 0.8))  # pomo
+	Kit.box(self, Vector3(1.6, 0.16, 0.7), Vector3(0, 0.08, -2.65), white)  # escalón
+	Kit.box(self, Vector3(0.6, 1.4, 0.6), Vector3(1.6, 4.3, -5.8), Kit.mat(Color("e0533a")))  # chimenea
 	for p in [Vector3(-1.5, 2.2, -2.95), Vector3(0, 2.2, -2.95), Vector3(1.5, 2.2, -2.95), Vector3(-1.5, 1.0, -2.95), Vector3(1.5, 1.0, -2.95)]:
+		Kit.box(self, Vector3(1.0, 0.9, 0.06), p + Vector3(0, 0, -0.03), Kit.mat(Color("ff8c1a")))  # marco
 		_windows.append(Kit.box(self, Vector3(0.8, 0.7, 0.1), p, Kit.mat(Color("2a3442"))))
 	for x in [-4.6, 4.6]:
 		Kit.cylinder(self, 0.08, 0.08, 1.4, Vector3(x, 0.7, -4), Kit.mat(Color("cfd8e6"), 0.0, 0.7), 8)
 		Kit.box(self, Vector3(2.6, 0.1, 1.6), Vector3(x, 1.45, -4), Kit.mat(Color("1d3f8f"), 0.3, 0.6, 0.08), Vector3(0.5, 0, 0))
-	Kit.cylinder(self, 0.7, 0.9, 1.1, Vector3(0, 0.55, 0), Kit.mat(Game.MODULES.solar.color), 32)
-	Kit.collider(self, Vector3(1.4, 1.1, 1.4), Vector3(0, 0.55, 0))
-	Kit.interactable(self, "RETO: ENERGÍA SOLAR", Vector3(0, 1, 0), 2.2).interacted.connect(start)
+	Kit.stand(self, Vector3(-3.4, 0, 1.5), Game.MODULES.solar.color, "RETO: ENERGÍA SOLAR").interacted.connect(start)
+	Kit.bake(self, _windows)
 
 	_layer.layer = 10
 	add_child(_layer)

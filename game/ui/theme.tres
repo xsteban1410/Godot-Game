@@ -4,22 +4,23 @@
 [ext_resource type="FontFile" path="res://ui/fonts/Rubik-ExtraBold.ttf" id="2_title"]
 
 [sub_resource type="StyleBoxFlat" id="panel"]
-content_margin_left = 22.0
+content_margin_left = 24.0
 content_margin_top = 16.0
-content_margin_right = 22.0
-content_margin_bottom = 16.0
-bg_color = Color(0.035, 0.075, 0.12, 0.86)
+content_margin_right = 24.0
+content_margin_bottom = 18.0
+bg_color = Color(0.04, 0.09, 0.15, 0.9)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.12, 0.82, 0.78, 0.35)
-corner_radius_top_left = 18
-corner_radius_top_right = 18
-corner_radius_bottom_right = 18
-corner_radius_bottom_left = 18
-shadow_color = Color(0, 0, 0, 0.35)
-shadow_size = 12
+border_width_bottom = 5
+border_color = Color(0.12, 0.82, 0.78, 0.55)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+shadow_color = Color(0, 0.02, 0.06, 0.4)
+shadow_size = 14
+shadow_offset = Vector2(0, 6)
 
 [sub_resource type="StyleBoxFlat" id="keycap"]
 content_margin_left = 14.0
@@ -113,8 +114,10 @@ Button/styles/pressed = SubResource("button_pressed")
 Button/styles/disabled = SubResource("button_disabled")
 Button/styles/focus = SubResource("button_focus")
 Caption/base_type = &"Label"
-Caption/colors/font_color = Color(0.6, 0.78, 0.84, 1)
-Caption/font_sizes/font_size = 18
+Caption/colors/font_color = Color(0.72, 0.86, 0.9, 1)
+Caption/colors/font_outline_color = Color(0.02, 0.04, 0.08, 0.9)
+Caption/constants/outline_size = 6
+Caption/font_sizes/font_size = 19
 KeyCap/base_type = &"PanelContainer"
 KeyCap/styles/panel = SubResource("keycap")
 Label/colors/font_color = Color(0.92, 0.97, 0.98, 1)

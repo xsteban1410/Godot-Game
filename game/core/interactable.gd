@@ -1,15 +1,13 @@
 class_name Interactable
 extends Area3D
-## Algo que el jugador activa con E estando cerca. Mismo contrato que el Interactable de Unity:
-## `get_prompt()` es el texto del aviso e `interact()` devuelve un mensaje corto (o "").
-## Las subclases sobrescriben `interact()`; las simples solo usan `message` o la señal `interacted`.
+## Algo que el jugador activa con E estando cerca: `prompt` es el texto del aviso y la señal
+## `interacted` lo que pasa al pulsar E.
 
 signal interacted
 
 const LAYER := 2  # capa de física 2: solo la ve el detector del jugador
 
 @export var prompt := "INTERACTUAR"
-@export var message := ""
 @export var marker_height := 2.4
 
 var _marker: MeshInstance3D
@@ -25,13 +23,8 @@ func _ready() -> void:
 	_marker.visible = false
 
 
-func get_prompt() -> String:
-	return prompt
-
-
-func interact() -> String:
+func interact() -> void:
 	interacted.emit()
-	return message
 
 
 func set_focused(focused: bool) -> void:

@@ -13,8 +13,8 @@ func _ready() -> void:
 	var rim := Kit.torus(self, 13.0, 16.0, Vector3.ZERO, Kit.mat(Color("7d828b"), 0.0, 0.0, 0.95))
 	rim.scale.y = 0.35
 	Kit.cylinder(self, 13.0, 13.0, 0.05, Vector3(0, 0.03, 0), Kit.mat(Color("2c2f36"), 0.0, 0.0, 1.0), 48)  # sombra perpetua
-	Kit.label(self, "SALTO LUNAR", Vector3(0, 4.5, 14), 110, Game.info("moon_jump").color, true, 0.012)
-	Kit.label(self, "Aquí la gravedad es 1/6: ¡salta!", Vector3(0, 3.4, 14), 52, Color.WHITE, true, 0.012)
+	Kit.banner(self, "SALTO LUNAR", Vector3(0, 6.0, 14), 110, Game.info("moon_jump").color)
+	Kit.banner(self, "Aquí la gravedad es 1/6: ¡salta!", Vector3(0, 4.9, 14), 52, Color.WHITE)
 	var rock := Kit.mat(Color("b9bdc6"), 0.0, 0.0, 0.8)
 	for i in STEPS:
 		var a := i * TAU / 6.0
@@ -24,6 +24,7 @@ func _ready() -> void:
 		Kit.collider(self, Vector3(2.8, 0.6, 2.8), p)
 		if i in CRYSTALS:
 			_crystal(CRYSTALS.find(i), p + Vector3(0, 1.3, 0))
+	Kit.bake(self)
 
 
 func _crystal(index: int, pos: Vector3) -> void:

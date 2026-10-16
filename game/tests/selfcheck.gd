@@ -35,10 +35,76 @@ func _initialize() -> void:
 		_check(cheapest <= level[2], "el %s tiene solución dentro del presupuesto (%d ≤ %d)" % [level[0], cheapest, level[2]])
 		_check(5 * bridge.MATERIALS[2][1] > level[2], "con el %s, todo hormigón no cabe en el presupuesto" % level[0])
 
+	# Caja redondeada de Kit: mide lo pedido, normales hacia fuera y caras en sentido horario (las que Godot dibuja).
+	var mesh: Mesh = load("res://core/kit.gd")._rounded_box(Vector3(2, 1, 0.5))
+	_check(mesh.get_aabb().size.is_equal_approx(Vector3(2, 1, 0.5)), "la caja redondeada mide lo pedido")
+	var arrays := mesh.surface_get_arrays(0)
+	var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+	var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
+	var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+	var outward := true
+	for i in vertices.size():
+		outward = outward and vertices[i].dot(normals[i]) > 0.0
+	var clockwise := true
+	for t in range(0, indices.size(), 3):
+		var a := vertices[indices[t]]
+		var face := (vertices[indices[t + 1]] - a).cross(vertices[indices[t + 2]] - a)
+		clockwise = clockwise and face.dot(normals[indices[t]] + normals[indices[t + 1]] + normals[indices[t + 2]]) <= 0.0
+	_check(outward and clockwise, "la caja redondeada no sale del revés")
+
+	# Desafío IA: la IA minimax (nivel 3) no pierde contra ninguna secuencia de jugadas; la del nivel 2 gana o tapa.
+	var ai: GDScript = load("res://modules/ai.gd")
+	var board: Array[int] = []
+	board.resize(9)
+	_check(not _x_can_win(ai, board), "ninguna partida le gana a la IA minimax")
+	board.assign([1, 1, 0, 0, 2, 0, 0, 0, 0])
+	_check(ai.choose(board, 1) == 2, "la IA del nivel 2 tapa la raya del jugador")
+	board.assign([2, 2, 0, 1, 1, 0, 1, 0, 0])
+	_check(ai.choose(board, 1) == 2, "la IA del nivel 2 prefiere ganar a tapar")
+
+	# Visión IA: cada figura aprendida se reconoce como ella misma y con seguridad; un dibujo vacío, no.
+	var vision: GDScript = load("res://modules/vision.gd")
+	for shape: String in vision.SHAPES:
+		var pixels := Array(vision.SHAPES[shape].replace(" ", "").split("")).map(func(c: String) -> int: return int(c == "#"))
+		var guess: Array = vision.classify(pixels)[0]
+		_check(guess[0] == shape and guess[1] >= vision.CONFIDENCE, "la IA reconoce %s (%s %d %%)" % [shape, guess[0], guess[1]])
+	var empty := []
+	empty.resize(25)
+	empty.fill(0)
+	_check(vision.classify(empty)[0][1] < vision.CONFIDENCE, "con el dibujo vacío la IA no está segura de nada")
+
+	# Matemáticas: respuestas enteras positivas y tres opciones falsas distintas.
+	var math: GDScript = load("res://modules/math.gd")
+	var sane := true
+	for round in 20:
+		for n in math.ROUND:
+			var q: Array = math.question(n)
+			var wrong: Array = math.distractors(q[1])
+			sane = sane and q[1] > 0 and wrong.size() == 3 and not q[1] in wrong and wrong.all(func(w: int) -> bool: return w > 0 and wrong.count(w) == 1)
+	_check(sane, "las preguntas de mates tienen respuesta y 3 opciones falsas distintas")
+
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(game.save_path))
 	game.free()
 	print("SELFCHECK %s (%d fallos)" % ["OK" if _failures == 0 else "FALLÓ", _failures])
 	quit(1 if _failures else 0)
+
+
+## ¿Hay alguna forma de que X gane si la IA del nivel 3 responde a cada jugada?
+func _x_can_win(ai: GDScript, board: Array[int]) -> bool:
+	for i in 9:
+		if board[i] != 0:
+			continue
+		board[i] = 1
+		var wins: bool = ai.winner(board) == 1
+		if not wins and board.has(0):
+			var reply: int = ai.choose(board, 2)
+			board[reply] = 2
+			wins = ai.winner(board) == 0 and _x_can_win(ai, board)
+			board[reply] = 0
+		board[i] = 0
+		if wins:
+			return true
+	return false
 
 
 func _check(condition: bool, description: String) -> void:

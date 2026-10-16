@@ -8,13 +8,14 @@ const TILE := 1.7
 const LEVELS := [Vector2i(4, 3), Vector2i(5, 4), Vector2i(6, 5)]
 const DIRS := [Vector2i(0, 1), Vector2i(1, 0), Vector2i(0, -1), Vector2i(-1, 0)]  # N, E, S, O
 const SHAPES := {"I": [0, 2], "L": [0, 1]}  # lados conectados sin girar
+static var _wire := Kit.mat(Color("8a96a8"), 0.0, 0.6, 0.3)  # cable apagado
 
 var _level := 0
 var _size := Vector2i()
 var _start := Vector2i()
 var _end := Vector2i()
 var _path: Array[Vector2i] = []  # el camino solución (lo usa la autocomprobación)
-var _tiles := {}  # Vector2i -> {"shape", "turns", "pivot", "arms"}
+var _tiles := {}  # Vector2i -> {"shape", "turns", "pivot", "cable"}
 var _grid := Node3D.new()
 var _melter: MeshInstance3D
 var _busy := false
@@ -22,9 +23,10 @@ var _busy := false
 
 func _ready() -> void:
 	_level = mini(int(Game.stars.get("moon_power", 0)), LEVELS.size() - 1)
+	_grid.position.y = 0.1  # sobre la plataforma del reto (si no, las casillas quedaban hundidas)
 	add_child(_grid)
-	Kit.label(self, "ENERGÍA DE LA BASE", Vector3(0, 5.0, 2.0), 110, Game.info("moon_power").color, true, 0.012)
-	Kit.label(self, "E en un cable: girarlo. Lleva la luz al fundidor de hielo.", Vector3(0, 4.0, 2.0), 46, Color.WHITE, true, 0.012)
+	Kit.banner(self, "ENERGÍA DE LA BASE", Vector3(0, 5.0, 2.0), 110, Game.info("moon_power").color)
+	Kit.banner(self, "E en un cable: girarlo. Lleva la luz al fundidor de hielo.", Vector3(0, 4.0, 2.0), 46, Color.WHITE)
 	_new_grid()
 
 
@@ -57,6 +59,7 @@ func _new_grid() -> void:
 	Kit.cylinder(_grid, 0.9, 1.0, 1.8, target + Vector3(0, 0.9, 0), Kit.mat(Color("f4f7fb")), 24)
 	_melter = Kit.cylinder(_grid, 0.55, 0.55, 1.0, target + Vector3(0, 1.3, 0.0), Kit.mat(Color(0.6, 0.95, 1.0, 0.8), 0.5, 0.0, 0.05), 6)
 	Kit.label(_grid, "FUNDIDOR", target + Vector3(0, 2.6, 0), 56, Color.WHITE)
+	Kit.bake(_grid, [_melter])
 	_refresh()
 
 
@@ -83,15 +86,15 @@ func _add_tile(cell: Vector2i, shape: String, turns: int) -> void:
 	pivot.position = p + Vector3(0, 0.12, 0)
 	pivot.rotation.y = -turns * PI / 2
 	_grid.add_child(pivot)
-	var arms: Array[MeshInstance3D] = [Kit.sphere(pivot, 0.2, Vector3.ZERO, null)]
+	Kit.sphere(pivot, 0.2, Vector3.ZERO, _wire)
 	for side: int in SHAPES[shape]:
 		var d: Vector2i = DIRS[side]
-		arms.append(Kit.box(pivot, Vector3(0.28, 0.14, 0.28) + Vector3(absf(d.x), 0, absf(d.y)) * TILE * 0.22,
-			Vector3(d.x, 0, -d.y) * TILE * 0.25, null))
+		Kit.box(pivot, Vector3(0.28, 0.14, 0.28) + Vector3(absf(d.x), 0, absf(d.y)) * TILE * 0.22, Vector3(d.x, 0, -d.y) * TILE * 0.25, _wire)
+	Kit.bake(pivot)  # el cable entero es una sola malla: encenderlo es cambiar un material
 	var area := Kit.interactable(_grid, "GIRAR CABLE", p + Vector3(0, 0.6, 0), 0.75)
 	area.marker_height = 1.2
 	area.interacted.connect(_on_turn.bind(cell))
-	_tiles[cell] = {"shape": shape, "turns": turns, "pivot": pivot, "arms": arms}
+	_tiles[cell] = {"shape": shape, "turns": turns, "pivot": pivot, "cable": pivot.get_child(0)}
 
 
 func _on_turn(cell: Vector2i) -> void:
@@ -133,8 +136,7 @@ func _lit() -> Dictionary:
 func _refresh() -> void:
 	var lit := _lit()
 	for cell: Vector2i in _tiles:
-		for arm: MeshInstance3D in _tiles[cell].arms:
-			arm.material_override = Kit.mat(Game.GOLD, 3.0) if lit.has(cell) else Kit.mat(Color("8a96a8"), 0.0, 0.6, 0.3)
+		_tiles[cell].cable.material_override = Kit.mat(Game.GOLD, 3.0) if lit.has(cell) else _wire
 	if lit.has(_end) and 1 in _sides(_end):
 		_solved()
 
@@ -147,9 +149,8 @@ func _solved() -> void:
 	Game.set_stars("moon_power", _level + 1)
 	Game.notify("¡Energía! En la Luna no hay nubes: los paneles solares reciben luz todo el día lunar.", Game.GOLD)
 	await get_tree().create_timer(2.0).timeout
-	if _level < LEVELS.size() - 1:
-		_level += 1
-		_new_grid()
+	_level = mini(_level + 1, LEVELS.size() - 1)  # tras el último nivel, otro tablero igual (antes se quedaba resuelto y repetía el premio)
+	_new_grid()
 	_busy = false
 
 

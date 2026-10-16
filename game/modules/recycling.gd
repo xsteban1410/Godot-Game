@@ -12,7 +12,7 @@ const BINS := {  # caneca -> [nombre, color, x]
 	"negra": ["CANECA NEGRA · NO APROVECHABLES", Color("2a2f38"), 3.2],
 }
 const SPOTS := [Vector3(-6, 0, 3), Vector3(6, 0, 3), Vector3(-7, 0, -1), Vector3(7, 0, -1),
-	Vector3(-4, 0, 6), Vector3(4, 0, 6), Vector3(-7.5, 0, -4.5), Vector3(7.5, 0, -4.5)]
+	Vector3(-2.2, 0, 5.2), Vector3(4, 0, 6), Vector3(-7.5, 0, -4.5), Vector3(7.5, 0, -4.5)]
 # [residuo, caneca, explicación, forma, color]; los 10 primeros son los del juego original.
 const ITEMS := [
 	["Cáscara de plátano", "verde", "Es un resto de alimento y se degrada con los orgánicos.", "peel", Color("ffd23f")],
@@ -43,9 +43,7 @@ var _board: Label3D
 
 
 func _ready() -> void:
-	Kit.cylinder(self, 0.7, 0.9, 1.1, Vector3(0, 0.55, 2.5), Kit.mat(Game.MODULES.recycling.color), 32)
-	Kit.collider(self, Vector3(1.4, 1.1, 1.4), Vector3(0, 0.55, 2.5))
-	Kit.interactable(self, "RETO: RECICLAJE", Vector3(0, 1, 2.5), 2.2).interacted.connect(start)
+	Kit.stand(self, Vector3(-5.0, 0, 5.8), Game.MODULES.recycling.color, "RETO: RECICLAJE").interacted.connect(start)
 	for id: String in BINS:
 		var spec: Array = BINS[id]
 		var base := Vector3(spec[2], 0, -6)
@@ -60,7 +58,8 @@ func _ready() -> void:
 		var area := Kit.interactable(self, spec[0], base + Vector3(0, 1, 0.6), 1.5)
 		area.interacted.connect(_throw.bind(id))
 		_bins[id] = [area, lid]
-	_board = Kit.label(self, "RECICLAJE\nPulsa E en el stand para empezar", Vector3(0, 3.6, -6), 56, Color("1d2a3a"))
+	_board = Kit.label(self, "RECICLAJE\nPulsa E en el atril para empezar", Vector3(0, 3.6, -6), 56, Color.WHITE)
+	Kit.bake(self)
 
 
 func start() -> void:
@@ -163,7 +162,7 @@ func _finish() -> void:
 	Game.set_stars("recycling", stars)
 	for id: String in BINS:
 		Fx.confetti(self, Vector3(BINS[id][2], 2.2, -6))
-	_board.text = "¡CIUDAD LIMPIA!  %s\n%d errores. Pulsa E en el stand para repetir" % [UI.stars(stars), _mistakes]
+	_board.text = "¡CIUDAD LIMPIA!  %s\n%d errores. Pulsa E en el atril para repetir" % [UI.stars(stars), _mistakes]
 
 
 func _refresh() -> void:

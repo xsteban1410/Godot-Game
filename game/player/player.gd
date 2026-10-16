@@ -1,7 +1,8 @@
 extends CharacterBody3D
 ## Explorador de Ciudad STEAM. Port de PlayerController + ThirdPersonCameraFollow + PlayerInteraction:
 ## movimiento relativo a la cámara con aceleración, coyote time, búfer de salto, salto variable,
-## cámara orbital que no atraviesa paredes y elección del interactuable más cercano al que miras.
+## jetpack (volver a pulsar ESPACIO en el aire), cámara orbital que no atraviesa paredes y elección del
+## interactuable más cercano al que miras.
 
 @export var walk_speed := 5.0
 @export var run_speed := 8.5
@@ -17,6 +18,9 @@ const ACCEL_AIR := 18.0
 const PITCH_MIN := -1.2
 const PITCH_MAX := 0.35
 const CAMERA_HEIGHT := 1.5
+const JET_FUEL := 1.3  # segundos de empuje; se recarga al pisar suelo
+const JET_LIFT := 5.5  # velocidad de subida con el jetpack (m/s)
+const MAX_PRINTS := 80
 
 @onready var _avatar: Node3D = $Avatar
 @onready var _yaw: Node3D = $CamYaw
@@ -31,7 +35,16 @@ var _stride := 0.0
 var _zoom := 6.0
 var _shake := 0.0
 var _clock := 0.0
-var _prints: Array[Node3D] = []
+var _prints: MultiMeshInstance3D  # huellas: una sola malla instanciada, un draw call para todas
+var _print_count := 0
+var _fuel := JET_FUEL
+var _jetting := false
+var _jet_sound := 0.0
+var _gauge: MeshInstance3D
+var _gauge_full: Material
+var _gauge_low: Material
+var _flames: Array[Node3D] = []
+var _smoke := CPUParticles3D.new()
 var _fall_speed := 0.0
 var _spawn: Transform3D
 var _nearby: Array[Interactable] = []
@@ -96,7 +109,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			_zoom = minf(_zoom + 0.6, 10.0)
 	elif event.is_action_pressed("interact") and _target:
-		Game.notify(_target.interact())
+		_target.interact()
 
 
 func _process(delta: float) -> void:
@@ -108,6 +121,12 @@ func _process(delta: float) -> void:
 	_shake = maxf(_shake - delta * 2.0, 0.0)
 	_camera.h_offset = randf_range(-1.0, 1.0) * _shake * 0.5
 	_camera.v_offset = randf_range(-1.0, 1.0) * _shake * 0.5
+	for flame in _flames:  # las llamas parpadean cada fotograma
+		flame.visible = _jetting
+		flame.scale = Vector3(1, randf_range(0.7, 1.3), 1)
+	_smoke.emitting = _jetting
+	_gauge.scale.x = maxf(_fuel / JET_FUEL, 0.05)
+	_gauge.material_override = _gauge_low if _fuel < JET_FUEL * 0.3 else _gauge_full
 
 
 func _physics_process(delta: float) -> void:
@@ -115,11 +134,12 @@ func _physics_process(delta: float) -> void:
 	var input := Vector2.ZERO if locked else Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	var direction := _yaw.global_basis.z * input.y + _yaw.global_basis.x * input.x
 	var speed := run_speed if Input.is_action_pressed("sprint") else walk_speed
-	var horizontal := Vector3(velocity.x, 0.0, velocity.z).move_toward(
-		direction * speed, (ACCEL_GROUND if is_on_floor() else ACCEL_AIR) * delta)
+	var accel := ACCEL_GROUND if is_on_floor() else ACCEL_AIR * (1.8 if _jetting else 1.0)
+	var horizontal := Vector3(velocity.x, 0.0, velocity.z).move_toward(direction * speed, accel * delta)
 
 	_coyote = COYOTE_TIME if is_on_floor() else _coyote - delta
-	_jump_buffer = JUMP_BUFFER if not locked and Input.is_action_just_pressed("jump") else _jump_buffer - delta
+	var pressed := not locked and Input.is_action_just_pressed("jump")
+	_jump_buffer = JUMP_BUFFER if pressed else _jump_buffer - delta
 	if _jump_buffer > 0.0 and _coyote > 0.0:
 		velocity.y = sqrt(2.0 * gravity * jump_height)
 		_jump_buffer = 0.0
@@ -130,9 +150,20 @@ func _physics_process(delta: float) -> void:
 		tween.tween_property(_avatar, "scale", Vector3(0.75, 1.3, 0.75), 0.08)
 		tween.tween_property(_avatar, "scale", Vector3.ONE, 0.25).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 	elif not is_on_floor():
-		# Caer más rápido que subir y cortar el salto al soltar la tecla da un salto ágil y controlable.
-		var released := velocity.y > 0.0 and not Input.is_action_pressed("jump")
-		velocity.y -= gravity * (1.6 if velocity.y < 0.0 or released else 1.0) * delta
+		# En el aire, volver a pulsar ESPACIO enciende el jetpack mientras se mantenga y quede combustible.
+		_jetting = (_jetting or pressed) and _fuel > 0.0 and not locked and Input.is_action_pressed("jump")
+		if _jetting:
+			_jump_buffer = 0.0
+			_fuel -= delta
+			velocity.y = move_toward(velocity.y, JET_LIFT, maxf(gravity, 12.0) * 2.5 * delta)
+			_jet_sound -= delta
+			if _jet_sound <= 0.0:
+				Sfx.play("jet", 0.1)
+				_jet_sound = 0.11
+		else:
+			# Caer más rápido que subir y cortar el salto al soltar la tecla da un salto ágil y controlable.
+			var released := velocity.y > 0.0 and not Input.is_action_pressed("jump")
+			velocity.y -= gravity * (1.6 if velocity.y < 0.0 or released else 1.0) * delta
 
 	velocity.x = horizontal.x
 	velocity.z = horizontal.z
@@ -141,6 +172,9 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	if is_on_floor() and not was_on_floor and _fall_speed > 4.0:
 		_land(_fall_speed)
+	if is_on_floor():
+		_jetting = false
+		_fuel = minf(_fuel + delta * 1.5, JET_FUEL)
 	if global_position.y < -15.0:
 		place(_spawn.origin, _spawn.basis.get_euler().y)
 
@@ -169,7 +203,7 @@ func _pick_target(locked: bool) -> void:
 		_target = best
 		if best:
 			best.set_focused(true)
-	var text := best.get_prompt() if best else ""
+	var text := best.prompt if best else ""
 	if text != _last_prompt:
 		_last_prompt = text
 		Game.set_prompt(text)
@@ -178,8 +212,12 @@ func _pick_target(locked: bool) -> void:
 func _animate(horizontal: Vector3, delta: float) -> void:
 	var speed := horizontal.length()
 	_clock += delta
+	var lean := 0.0
 	if speed > 0.3:
-		_avatar.rotation.y = lerp_angle(_avatar.rotation.y, atan2(horizontal.x, horizontal.z), 1.0 - exp(-12.0 * delta))
+		var turn := angle_difference(_avatar.rotation.y, atan2(horizontal.x, horizontal.z))
+		_avatar.rotation.y += turn * (1.0 - exp(-12.0 * delta))
+		lean = -clampf(turn, -0.8, 0.8) * 0.3 * speed / run_speed  # se inclina hacia el lado al que gira
+	_avatar.rotation.z = lerpf(_avatar.rotation.z, lean, 1.0 - exp(-8.0 * delta))
 	# Se inclina hacia delante al correr y "respira" parado.
 	_avatar.rotation.x = lerpf(_avatar.rotation.x, speed / run_speed * 0.22, 1.0 - exp(-8.0 * delta))
 	_avatar.position.y = sin(_clock * 2.5) * 0.03 if speed < 0.3 and is_on_floor() else 0.0
@@ -192,19 +230,36 @@ func _animate(horizontal: Vector3, delta: float) -> void:
 			Sfx.play("step", 0.15)
 			if footprints:
 				_footprint()
-	_arm_l.rotation.x = swing if is_on_floor() else -2.4
-	_arm_r.rotation.x = -swing if is_on_floor() else -2.4
-	_leg_l.rotation.x = -swing if is_on_floor() else 0.5
-	_leg_r.rotation.x = swing if is_on_floor() else -0.3
+	if _jetting:  # volando: brazos atrás y piernas colgando
+		_arm_l.rotation.x = 0.6
+		_arm_r.rotation.x = 0.6
+		_leg_l.rotation.x = 0.25
+		_leg_r.rotation.x = -0.1
+	else:
+		_arm_l.rotation.x = swing if is_on_floor() else -2.4
+		_arm_r.rotation.x = -swing if is_on_floor() else -2.4
+		_leg_l.rotation.x = -swing if is_on_floor() else 0.5
+		_leg_r.rotation.x = swing if is_on_floor() else -0.3
 
 
 func _footprint() -> void:
-	var side := 0.14 if _prints.size() % 2 == 0 else -0.14
-	var foot := Kit.box(get_parent(), Vector3(0.22, 0.012, 0.34), global_position + _avatar.global_basis.x * side + Vector3(0, 0.006, 0),
-		Kit.mat(Color("6e7279"), 0.0, 0.0, 1.0), Vector3(0, _avatar.rotation.y, 0))
-	_prints.append(foot)
-	if _prints.size() > 80:
-		_prints.pop_front().queue_free()
+	if not _prints:
+		var foot := BoxMesh.new()
+		foot.size = Vector3(0.22, 0.012, 0.34)
+		_prints = MultiMeshInstance3D.new()
+		_prints.multimesh = MultiMesh.new()
+		_prints.multimesh.transform_format = MultiMesh.TRANSFORM_3D
+		_prints.multimesh.mesh = foot
+		_prints.multimesh.instance_count = MAX_PRINTS
+		_prints.material_override = Kit.mat(Color("6e7279"), 0.0, 0.0, 1.0)
+		_prints.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		get_parent().add_child(_prints)
+	var prints := _prints.multimesh
+	var side := 0.14 if _print_count % 2 == 0 else -0.14
+	prints.set_instance_transform(_print_count % MAX_PRINTS, Transform3D(Basis(Vector3.UP, _avatar.rotation.y),
+		global_position + _avatar.global_basis.x * side + Vector3(0, 0.006, 0)))
+	_print_count += 1
+	prints.visible_instance_count = mini(_print_count, MAX_PRINTS)  # las más viejas se reutilizan
 
 
 ## Aterrizaje: aplastón, polvo y sacudida proporcionales a la velocidad de caída.
@@ -218,9 +273,48 @@ func _land(fall_speed: float) -> void:
 	tween.tween_property(_avatar, "scale", Vector3.ONE, 0.35).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 
 
+## Robot del jugador con su jetpack: dos llamas que salen de las toberas, humo y la franja de combustible.
 func _build_avatar() -> void:
 	var limbs := Kit.robot(_avatar, Color("1f6fff"))
 	_arm_l = limbs[0]
 	_arm_r = limbs[1]
 	_leg_l = limbs[2]
 	_leg_r = limbs[3]
+	var pack: Node3D = _avatar.get_node("Jetpack")
+	_gauge = pack.get_node("Gauge")
+	_gauge_full = _gauge.material_override
+	_gauge_low = Kit.mat(Game.RED, 3.0)
+	for side in [-0.1, 0.1]:
+		var flame := Node3D.new()  # pivote en la tobera: la llama se estira hacia abajo
+		flame.position = Vector3(side, 0.65, -0.3)
+		flame.visible = false
+		pack.add_child(flame)
+		Kit.cylinder(flame, 0.055, 0.0, 0.36, Vector3(0, -0.18, 0), Kit.mat(Color("ffb347"), 4.0), 10).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		Kit.cylinder(flame, 0.03, 0.0, 0.2, Vector3(0, -0.1, 0), Kit.mat(Color("fff6c8"), 6.0), 8).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		_flames.append(flame)
+	var puff := SphereMesh.new()
+	puff.radius = 0.09
+	puff.height = 0.18
+	puff.radial_segments = 8
+	puff.rings = 4
+	_smoke.mesh = puff
+	_smoke.material_override = Kit.mat(Color("f4f7fb"), 0.4, 0.0, 0.6)
+	_smoke.amount = 24
+	_smoke.lifetime = 0.5
+	_smoke.emitting = false
+	_smoke.local_coords = false
+	_smoke.position = Vector3(0, 0.45, -0.3)
+	_smoke.direction = Vector3.DOWN
+	_smoke.spread = 18.0
+	_smoke.initial_velocity_min = 3.0
+	_smoke.initial_velocity_max = 5.0
+	_smoke.gravity = Vector3.ZERO
+	_smoke.damping_min = 6.0
+	_smoke.damping_max = 8.0
+	var grow := Curve.new()
+	grow.add_point(Vector2(0.0, 0.5))
+	grow.add_point(Vector2(0.4, 1.4))
+	grow.add_point(Vector2(1.0, 0.0))
+	_smoke.scale_amount_curve = grow
+	_smoke.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	pack.add_child(_smoke)

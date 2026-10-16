@@ -43,7 +43,7 @@ func _ready() -> void:
 	_prompt_label = UI.label("")
 	row.add_child(_prompt_label)
 	column.add_child(_prompt)
-	column.add_child(UI.label("WASD mover  ·  RATÓN cámara  ·  SHIFT correr  ·  ESPACIO saltar  ·  E interactuar  ·  RUEDA zoom", "Caption"))
+	column.add_child(UI.label("WASD mover  ·  RATÓN cámara  ·  SHIFT correr  ·  ESPACIO saltar (otra vez en el aire: JETPACK)  ·  E interactuar  ·  RUEDA zoom", "Caption"))
 
 	_celebration.layer = 50  # por encima de los paneles de los retos
 	add_child(_celebration)
@@ -61,14 +61,26 @@ func _on_prompt_changed(text: String) -> void:
 
 func _refresh_missions() -> void:
 	UI.clear(_missions)
-	var modules: Dictionary = Game.MOON_MODULES if moon else Game.MODULES
-	_missions.add_child(UI.label("%s  ·  ★ %d / 12" % ["MISIONES LUNARES" if moon else "MISIONES", Game.total_stars(modules)], "Caption", Game.TEAL))
-	for id: String in modules:
-		var info: Dictionary = modules[id]
-		_missions.add_child(UI.label("●  %s   %s" % [info.name, UI.stars(int(Game.stars.get(id, 0)))]))
-	if not moon:
+	if moon:
+		_mission_list("MISIONES LUNARES", Game.MOON_MODULES)
+	else:
+		_mission_list("MISIONES", Game.MODULES)
 		_missions.add_child(UI.label("COHETE  ·  %d / 12 piezas" % Game.total_stars(), "Caption", Game.GOLD))
+		_mission_list("LABORATORIO", Game.LAB_MODULES)
 	UI.ignore_mouse(_missions)
+
+
+func _mission_list(title: String, modules: Dictionary) -> void:
+	_missions.add_child(UI.label("%s  ·  ★ %d / %d" % [title, Game.total_stars(modules), modules.size() * 3], "Caption", Game.TEAL))
+	for id: String in modules:
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 10)
+		row.add_child(UI.label("●", "", modules[id].color))
+		var label := UI.label(modules[id].name)
+		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(label)
+		row.add_child(UI.label(UI.stars(int(Game.stars.get(id, 0))), "", Game.GOLD))
+		_missions.add_child(row)
 
 
 func _show_toast(text: String, color: Color) -> void:
@@ -119,11 +131,12 @@ func _on_stars_changed(module: String, stars: int) -> void:
 	out.tween_property(center, "modulate:a", 0.0, 0.5)
 	out.tween_callback(center.queue_free)
 	if Game.MODULES.has(module) and Game.total_stars() == Game.MODULES.size() * 3:
-		get_tree().create_timer(3.4).timeout.connect(_show_certificate)
+		get_tree().create_timer(3.4).timeout.connect(show_certificate)
 
 
 ## Con las 12 estrellas: certificado en pantalla unos segundos (sin menú que cerrar).
-func _show_certificate() -> void:
+## `astronaut`: al volver de la Luna, con las 24 estrellas posibles y los créditos después.
+func show_certificate(astronaut := false) -> void:
 	var center := CenterContainer.new()
 	center.theme = UI.THEME
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -133,8 +146,13 @@ func _show_certificate() -> void:
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation", 16)
 	panel.add_child(column)
-	for line: Array in [["CERTIFICADO STEAM", 72, Game.GOLD], ["★ 12 / 12", 56, Game.GOLD],
-			["Ciudad STEAM reconoce a este explorador por completar\nEnergía solar, Ingeniería, Robótica y Reciclaje.", 30, Game.TEXT]]:
+	var lines := [["CERTIFICADO STEAM", 72, Game.GOLD], ["★ 12 / 12", 56, Game.GOLD],
+			["Ciudad STEAM reconoce a este explorador por completar\nEnergía solar, Ingeniería, Robótica y Reciclaje.", 30, Game.TEXT]]
+	if astronaut:
+		lines = [["CERTIFICADO DE ASTRONAUTA STEAM", 64, Game.GOLD],
+			["★ %d / 24" % (Game.total_stars() + Game.total_stars(Game.MOON_MODULES)), 56, Game.GOLD],
+			["Viajó a la Luna en un cohete de agua, encontró hielo, le dio energía\na la base, purificó el agua y volvió sano y salvo a casa.", 30, Game.TEXT]]
+	for line: Array in lines:
 		var label := UI.label(line[0], "Title", line[2])
 		label.add_theme_font_size_override("font_size", line[1])
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -146,3 +164,30 @@ func _show_certificate() -> void:
 	out.tween_interval(8.0)
 	out.tween_property(center, "modulate:a", 0.0, 0.8)
 	out.tween_callback(center.queue_free)
+	if astronaut:
+		out.tween_callback(_roll_credits)
+
+
+## Créditos que suben por la pantalla y desaparecen.
+func _roll_credits() -> void:
+	var column := VBoxContainer.new()
+	column.theme = UI.THEME
+	column.add_theme_constant_override("separation", 18)
+	column.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	column.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_celebration.add_child(column)
+	for line: Array in [["CIUDAD STEAM · MISIÓN LUNAR", 64, Game.GOLD], ["", 30, Game.TEXT],
+			["Basado en el juego de Unity «Ciudad STEAM»", 32, Game.TEXT], ["Llevado a Godot 4.7 y ampliado con la Misión Lunar", 32, Game.TEXT],
+			["", 30, Game.TEXT], ["Ciencia · Tecnología · Ingeniería · Arte · Matemáticas", 32, Game.TEAL],
+			["", 30, Game.TEXT], ["¡Gracias por jugar!", 56, Game.GOLD]]:
+		var label := UI.label(line[0], "Title", line[2])
+		label.add_theme_font_size_override("font_size", line[1])
+		label.add_theme_constant_override("outline_size", 14)  # legible sobre el suelo claro
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		column.add_child(label)
+	UI.ignore_mouse(column)
+	var height := get_viewport().get_visible_rect().size.y
+	column.position.y = height
+	var roll := column.create_tween()
+	roll.tween_property(column, "position:y", -height * 0.6, 16.0)
+	roll.tween_callback(column.queue_free)

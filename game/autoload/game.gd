@@ -25,6 +25,11 @@ const MODULES := {
 	"robotics": {"name": "Robótica", "color": Color("1fa8ff"), "desc": "Programa al robot hasta la meta"},
 	"recycling": {"name": "Reciclaje", "color": Color("3fcf5a"), "desc": "Clasifica los residuos a tiempo"},
 }
+const LAB_MODULES := {  # retos extra del STEAM LAB: no son piezas del cohete
+	"math": {"name": "Matemáticas", "color": Color("9b6bff"), "desc": "Vuela con el jetpack a la respuesta"},
+	"vision": {"name": "Visión IA", "color": Color("ff4f8b"), "desc": "Dibuja con tus pasos para la cámara IA"},
+	"ai": {"name": "Desafío IA", "color": Color("00c2a8"), "desc": "Gana a NOVA, la IA del tres en raya"},
+}
 
 var save_path := "user://save.cfg"
 var arriving := false  # true mientras el cohete viaja: la escena de destino reproduce el aterrizaje
@@ -70,7 +75,7 @@ func total_stars(modules := MODULES) -> int:
 
 
 func info(id: String) -> Dictionary:
-	return MODULES[id] if MODULES.has(id) else MOON_MODULES[id]
+	return MODULES.get(id, LAB_MODULES.get(id, MOON_MODULES.get(id)))
 
 
 func set_prompt(text: String) -> void:

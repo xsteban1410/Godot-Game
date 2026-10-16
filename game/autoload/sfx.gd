@@ -25,6 +25,7 @@ func _ready() -> void:
 		"boom": _synth([[220.0, 0.0, 0.7, 60.0]], 1.0, "noise"),
 		"splash": _synth([[1800.0, 0.0, 0.5, 600.0]], 0.5, "noise"),
 		"hop": _synth([[400.0, 0.0, 0.1, 800.0]], 0.25),
+		"jet": _synth([[900.0, 0.0, 0.16, 500.0]], 0.3, "noise"),
 	}
 	for i in VOICES:
 		var player := AudioStreamPlayer.new()

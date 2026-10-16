@@ -10,7 +10,9 @@ var _game: Node
 func _initialize() -> void:
 	_game = root.get_node("Game")
 	_game.save_path = "user://play_test.cfg"  # nunca tocar la partida real
-	_game.stars = {}  # empezar de cero aunque la partida real tenga estrellas
+	# Game._ready() carga save_path después de esto: sin borrar, una prueba cortada deja estrellas para la siguiente.
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(_game.save_path))
+	_game.stars = {}
 	change_scene_to_file("res://world/city.tscn")
 	_run.call_deferred()
 
@@ -82,6 +84,11 @@ func _run() -> void:
 	await _frames(70)
 	var to_bridge := player.global_position.distance_to(Vector3(44, 0, 0))
 	_check(to_bridge < 9.0 and not _game.is_locked(), "el módulo Ingeniería lleva a su distrito (%.1f m del centro)" % to_bridge)
+	lab.open()
+	lab._choose("rocket")
+	await _frames(85)
+	var to_rocket := player.global_position.distance_to(current_scene.LAUNCH)
+	_check(to_rocket < 9.0 and not _game.is_locked(), "la tarjeta del cohete lleva a la plataforma (%.1f m)" % to_rocket)
 
 
 	# --- Fase 3: Energía solar ---
@@ -146,6 +153,10 @@ func _run() -> void:
 	robotics._program.assign(robotics._solve())
 	await robotics._run()
 	_check(_game.stars.get("robotics", 0) == 1 and robotics._level == 1, "la solución llega a la estrella: 1 estrella y nivel 2")
+	robotics._running = true  # a mitad de un programa
+	robotics.close()
+	_check(robotics._layer.visible, "SALIR no cierra Robótica mientras el robot ejecuta el programa")
+	robotics._running = false
 	robotics.close()
 	_check(get_root().get_viewport().get_camera_3d() != robotics._camera and not _game.is_locked(), "cerrar devuelve la cámara y el control")
 
@@ -171,6 +182,69 @@ func _run() -> void:
 		while recycling._busy:
 			await physics_frame
 	_check(recycling._done == 8 and _game.stars.get("recycling", 0) == 2, "8 aciertos con 1 error dan 2 estrellas")
+
+	# --- Fase 14: jetpack y retos del laboratorio ---
+	player.place(Vector3(0, 0.5, 22), 0.0)
+	await _frames(20)
+	var ground := player.global_position.y
+	Input.action_press("jump")
+	await _frames(12)
+	Input.action_release("jump")
+	await _frames(2)
+	Input.action_press("jump")  # segunda pulsación en el aire: jetpack
+	var flight := ground
+	for i in 100:
+		await physics_frame
+		flight = maxf(flight, player.global_position.y)
+	Input.action_release("jump")
+	_check(flight - ground > 5.0, "con el jetpack se sube %.1f m (saltando, 1,5)" % (flight - ground))
+	_check(player._fuel <= 0.0, "el jetpack gasta su combustible")
+	await _frames(150)
+	_check(player.is_on_floor() and player._fuel >= player.JET_FUEL, "en el suelo el jetpack se recarga")
+
+	var math: Node3D = _find("_on_land")
+	_check(flight - ground > math.PADS.map(func(p: Vector3) -> float: return p.y).max() + 0.2, "la plataforma más alta de mates se alcanza con el jetpack")
+	math.start()
+	math._on_land(player, (math._right + 1) % 4)
+	_check(math._mistakes == 1 and math._index == 0, "posarse en la respuesta equivocada es un error")
+	for i in math.ROUND:
+		math._on_land(player, math._right)
+		while math._busy:
+			await physics_frame
+	_check(_game.stars.get("math", 0) == 2, "6 respuestas con 1 error dan 2 estrellas en mates")
+
+	var vision: Node3D = _find("toggle")
+	vision._on_stand()
+	_check(vision._pixels.count(1) == 0 and vision._playing, "empezar Visión IA borra el dibujo de muestra")
+	player.place(vision.to_global(vision._pos(12)) + Vector3(0, 0.3, 0), 0.0)
+	await _frames(15)
+	_check(vision._pixels[12] == 1, "pisar una baldosa enciende su píxel")
+	player.place(vision.to_global(Vector3(0, 0.5, 6)), 0.0)
+	await _frames(5)
+	var cross: String = vision.SHAPES[vision.GOALS[0]].replace(" ", "")
+	for i in 25:
+		if vision._pixels[i] != int(cross[i] == "#"):
+			vision.toggle(i)
+	await vision._analyze()
+	_check(_game.stars.get("vision", 0) == 1 and vision._level == 1 and vision._pixels.count(1) == 0,
+		"la IA reconoce la cruz: estrella y siguiente figura")
+
+	var duel: Node3D = _find("_nova_turn")
+	duel._level = 2
+	duel.start()
+	while duel._playing:  # juego perfecto de X contra la IA minimax: siempre empate
+		var best := -1
+		var lowest := 1000
+		for i in 9:
+			if duel._board[i] == 0:
+				duel._board[i] = 1
+				var value: int = duel.minimax(duel._board, 2)
+				duel._board[i] = 0
+				if value < lowest:
+					lowest = value
+					best = i
+		await duel._on_cell(best)
+	_check(duel.winner(duel._board) == 0 and _game.stars.get("ai", 0) == 3, "empatar contra la IA perfecta da la 3.ª estrella")
 
 	# --- Fase 8: piezas del cohete (piezas = estrellas) ---
 	var rocket: Node3D = current_scene.find_children("*", "", true, false).filter(func(n: Node) -> bool: return n.has_method("_count"))[0]
@@ -214,8 +288,9 @@ func _run() -> void:
 	var astronaut: CharacterBody3D = get_first_node_in_group("player")
 	_check(astronaut.gravity < 4.0 and astronaut.visible and not _game.is_locked(), "en la Luna: gravedad 1/6 y control tras el aterrizaje")
 
+	_check(_find("_moon_done")._pad.prompt.ends_with("(0 / 4 retos)"), "sin los retos lunares el cohete no puede volver")
+
 	# --- Fase 11: retos lunares ---
-	var moon_nodes := current_scene.find_children("*", "", true, false)
 	var moon_floor := astronaut.global_position.y
 	var top := moon_floor
 	_press("jump")
@@ -224,14 +299,13 @@ func _run() -> void:
 		top = maxf(top, astronaut.global_position.y)
 	Input.action_release("jump")
 	_check(top - moon_floor > 4.0, "en la Luna se salta %.1f m (en la Tierra, 1,5)" % (top - moon_floor))
-	var jump: Node3D = moon_nodes.filter(func(n: Node) -> bool: return n.has_method("_collect"))[0]
+	var jump: Node3D = _find("_collect")
 	_check(jump.STEPS > 1 and 2.4 < top - moon_floor, "cada escalón del salto lunar (2,4 m) se alcanza saltando")
 	astronaut.global_position = jump._crystals[0].global_position
 	await _frames(10)
 	_check(_game.stars.get("moon_jump", 0) == 1, "tocar un cristal de hielo da una estrella lunar")
 
-	moon_nodes = current_scene.find_children("*", "", true, false)  # el cristal recogido ya no existe
-	var rover: Node3D = moon_nodes.filter(func(n: Node) -> bool: return n.has_method("_solve"))[0]
+	var rover: Node3D = _find("_solve")
 	for level in 3:
 		rover._level = level
 		rover._new_board()
@@ -244,7 +318,7 @@ func _run() -> void:
 	rover.close()
 	_check(_game.stars.get("moon_rover", 0) == 1, "el rover llega al hielo: estrella lunar")
 
-	var power: Node3D = moon_nodes.filter(func(n: Node) -> bool: return n.has_method("_lit"))[0]
+	var power: Node3D = _find("_lit")
 	_check(not power._lit().has(power._end), "el circuito empieza sin resolver")
 	for i in power._path.size():  # girar cada pieza del camino hasta que una su entrada y su salida
 		var cell: Vector2i = power._path[i]
@@ -254,8 +328,13 @@ func _run() -> void:
 			power._turn(cell)
 	power._refresh()
 	_check(_game.stars.get("moon_power", 0) == 1, "llevar la corriente al fundidor da una estrella lunar")
+	while power._busy:
+		await physics_frame
+	power._level = 2
+	await power._solved()
+	_check(power._level == 2 and not power._lit().has(power._end), "tras el último nivel sale otro circuito sin resolver (no repite el premio)")
 
-	var water: Node3D = moon_nodes.filter(func(n: Node) -> bool: return n.has_method("_pour"))[0]
+	var water: Node3D = _find("_pour")
 	for layer in ["GRAVA", "ARENA", "CARBÓN ACTIVADO"]:
 		water._add(layer)
 	await water._pour()
@@ -264,10 +343,35 @@ func _run() -> void:
 		water._add(layer)
 	await water._pour()
 	_check(_game.stars.get("moon_water", 0) == 2, "orden correcto al segundo intento: 2 estrellas")
+	_check(water._stack.is_empty() and water._tries == 0, "tras el agua limpia el filtro se vacía para intentar 3 estrellas")
+	for layer in ["CARBÓN ACTIVADO", "ARENA", "GRAVA"]:
+		water._add(layer)
+	await water._pour()
+	_check(_game.stars.get("moon_water", 0) == 3, "repetir sin fallos sube a 3 estrellas")
+
+	# --- Fase 12: regreso ---
+	var moon_rocket: Node3D = _find("_moon_done")
+	_check(moon_rocket._pad.prompt == "VOLVER A LA TIERRA", "con los 4 retos lunares el cohete puede volver")
+	moon_rocket._pad.interact()
+	await _frames(700)
+	_check(current_scene.name == "City", "el cohete vuelve de la Luna a la ciudad")
+	await _frames(300)
+	var home: CharacterBody3D = get_first_node_in_group("player")
+	_check(home.visible and not _game.is_locked() and home.gravity > 10.0, "tras el paracaídas se juega en la Tierra con gravedad normal")
+	_check(not current_scene.get_node("HUD").find_children("*", "Label", true, false).filter(
+		func(l: Label) -> bool: return l.text == "CERTIFICADO DE ASTRONAUTA STEAM").is_empty(), "al aterrizar aparece el certificado de astronauta")
+	await _frames(700)
+	_check(not current_scene.get_node("HUD").find_children("*", "Label", true, false).filter(
+		func(l: Label) -> bool: return l.text == "¡Gracias por jugar!").is_empty(), "tras el certificado salen los créditos")
 
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(_game.save_path))
 	print("PLAY TEST %s (%d fallos)" % ["OK" if _failures == 0 else "FALLÓ", _failures])
 	quit(1 if _failures else 0)
+
+
+## Busca en la escena actual (no en una lista guardada: los retos liberan nodos al ganarse).
+func _find(method: String) -> Node:
+	return current_scene.find_children("*", "", true, false).filter(func(n: Node) -> bool: return n.has_method(method))[0]
 
 
 func _button(container: Node, text: String) -> Button:

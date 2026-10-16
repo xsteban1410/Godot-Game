@@ -42,9 +42,8 @@ func _ready() -> void:
 		_levels = ROVER_LEVELS
 		_goal_name = "el hielo"
 	_level = mini(int(Game.stars.get(_module, 0)), _levels.size() - 1)
-	Kit.cylinder(self, 0.7, 0.9, 1.1, Vector3(0, 0.55, 2.5), Kit.mat(Game.info(_module).color), 32)
-	Kit.collider(self, Vector3(1.4, 1.1, 1.4), Vector3(0, 0.55, 2.5))
-	Kit.interactable(self, "RETO: " + String(Game.info(_module).name).to_upper(), Vector3(0, 1, 2.5), 2.2).interacted.connect(open)
+	Kit.stand(self, Vector3(-4.0, 0, 2.0), Game.info(_module).color, "RETO: " + String(Game.info(_module).name).to_upper()).interacted.connect(open)
+	Kit.bake(self)
 	add_child(_board)
 	add_child(_robot)
 	var body := Node3D.new()
@@ -54,7 +53,9 @@ func _ready() -> void:
 		_build_rover(body)
 	else:
 		Kit.robot(body, Game.MODULES.robotics.color)
+		Kit.blob_shadow(_robot)
 	add_child(_camera)
+	_camera.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF  # se coloca fuera del paso de física
 	_build_ui()
 	_new_board()
 
@@ -71,6 +72,8 @@ func open() -> void:
 
 
 func close() -> void:
+	if _running:  # el botón SALIR también: si no, el programa seguía corriendo fuera de cámara
+		return
 	_layer.visible = false
 	Game.pop_lock(self)
 	if _previous_camera:
@@ -86,9 +89,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		KEY_RIGHT: _add("R")
 		KEY_BACKSPACE: _remove()
 		KEY_ENTER, KEY_KP_ENTER: _run()
-		KEY_ESCAPE:
-			if not _running:
-				close()
+		KEY_ESCAPE: close()
 		_: return
 	get_viewport().set_input_as_handled()
 
@@ -230,6 +231,7 @@ func _new_board() -> void:
 	var tween := star.create_tween().set_loops()
 	tween.tween_property(star, "position:y", 1.3, 0.8).set_trans(Tween.TRANS_SINE)
 	tween.tween_property(star, "position:y", 1.0, 0.8).set_trans(Tween.TRANS_SINE)
+	Kit.bake(_board)  # hasta ~100 piezas (casillas, bloques, tetones) en unos pocos draw calls
 	_program.clear()
 	_reset_robot()
 	_refresh_chips()
@@ -306,10 +308,9 @@ func _build_ui() -> void:
 	add_child(_layer)
 	var margin := MarginContainer.new()
 	margin.theme = UI.THEME
-	margin.set_anchors_preset(Control.PRESET_LEFT_WIDE)
+	margin.set_anchors_preset(Control.PRESET_TOP_LEFT)  # el panel mide lo que su contenido: sin hueco vacío
 	margin.add_theme_constant_override("margin_left", 28)
 	margin.add_theme_constant_override("margin_top", 28)
-	margin.add_theme_constant_override("margin_bottom", 28)
 	_layer.add_child(margin)
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size.x = 560
@@ -324,7 +325,6 @@ func _build_ui() -> void:
 	_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(_status)
 	_chips = HFlowContainer.new()
-	_chips.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	column.add_child(_chips)
 	for row in [[["AVANZAR", _add.bind("F")], ["IZQUIERDA", _add.bind("L")], ["DERECHA", _add.bind("R")]],
 			[["BORRAR", _remove], ["EJECUTAR", _run], ["SALIR", close]]]:

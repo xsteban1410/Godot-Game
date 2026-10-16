@@ -14,6 +14,7 @@ const LEVELS := [["COCHE", 3, 120], ["CAMIÓN", 4, 170], ["VOLQUETA", 5, 190]]  
 const FACTORS := [1.0, 1.5, 2.0, 1.5, 1.0]  # carga de cada tramo respecto al peso: máxima en el centro
 const SLOT_Z := [-0.75, -2.25, -3.75, -5.25, -6.75]
 const START := Vector3(0, 1.0, 1.8)
+const WATER := preload("res://world/water.gdshader")
 const END := Vector3(0, 1.0, -9.3)
 
 var _slots := [-1, -1, -1, -1, -1]  # material de cada tramo, -1 = vacío
@@ -30,21 +31,25 @@ func _ready() -> void:
 	var stone := Kit.mat(Color("e8ecf2"))
 	for z in [1.5, -9.0]:
 		Kit.solid(self, Vector3(6, 1, 3), Vector3(0, 0.5, z), stone)
-	Kit.box(self, Vector3(16, 0.12, 7.5), Vector3(0, 0.22, -3.75), Kit.mat(Color("2ea8ff"), 0.4, 0.0, 0.05))
+	var river := ShaderMaterial.new()
+	river.shader = WATER
+	Kit.box(self, Vector3(16, 0.12, 7.5), Vector3(0, 0.22, -3.75), river)
 	for i in SLOT_Z.size():
 		Kit.box(self, Vector3(3.4, 0.04, 1.36), Vector3(0, 0.9, SLOT_Z[i]), Kit.mat(Color(1, 1, 1, 0.3)))
 		var slot := Kit.interactable(self, "", Vector3(0, 1.0, SLOT_Z[i]), 1.4)
 		slot.interacted.connect(_cycle.bind(i))
 		_slot_areas.append(slot)
 
-	Kit.box(self, Vector3(4.6, 2.9, 0.2), Vector3(-4.6, 2.1, 3.6), Kit.mat(Color.WHITE))
-	Kit.box(self, Vector3(4.8, 0.14, 0.24), Vector3(-4.6, 3.6, 3.6), Kit.mat(Game.MODULES.bridge.color))
+	Kit.box(self, Vector3(5.2, 3.0, 0.2), Vector3(-4.6, 2.15, 3.6), Kit.mat(Color.WHITE))
+	Kit.box(self, Vector3(5.4, 0.16, 0.26), Vector3(-4.6, 3.7, 3.6), Kit.mat(Game.MODULES.bridge.color))
 	Kit.cylinder(self, 0.08, 0.08, 1.2, Vector3(-4.6, 0.3, 3.6), Kit.mat(Color("cfd8e6")), 8)
-	_board = Kit.label(self, "", Vector3(-4.6, 2.1, 3.72), 30, Color("1d2a3a"), false, 0.01)
+	_board = Kit.label(self, "", Vector3(-4.6, 2.15, 3.72), 30, Color("1d2a3a"), false, 0.0072)  # cabe la línea más larga
 	Kit.cylinder(self, 0.5, 0.6, 1.0, Vector3(4.2, 0.5, 3.6), Kit.mat(Color("f4f7fb")), 24)
 	Kit.sphere(self, 0.42, Vector3(4.2, 1.0, 3.6), Kit.mat(Color("ff3b3b"), 0.6), Vector3(1, 0.6, 1))
 	Kit.collider(self, Vector3(1.2, 1.2, 1.2), Vector3(4.2, 0.6, 3.6))
+	Kit.label(self, "PROBAR", Vector3(4.2, 0.55, 4.18), 40, Game.RED, false, 0.008)
 	Kit.interactable(self, "PROBAR EL PUENTE", Vector3(4.2, 1.0, 3.6), 1.6).interacted.connect(_test)
+	Kit.bake(self)
 	_build_truck()
 	_refresh()
 
@@ -152,10 +157,13 @@ func _build_truck() -> void:
 	Kit.box(_truck, Vector3(1.5, 0.45, 2.2), Vector3(0, 0.5, 0), Kit.mat(Game.MODULES.bridge.color))
 	Kit.box(_truck, Vector3(1.3, 0.6, 0.75), Vector3(0, 1.0, -0.62), Kit.mat(Color("f4f7fb")))
 	Kit.box(_truck, Vector3(1.15, 0.32, 0.05), Vector3(0, 1.08, -1.0), Kit.mat(Color("05070c"), 0.0, 0.3, 0.05))
+	for x in [-0.5, 0.5]:  # faros
+		Kit.sphere(_truck, 0.11, Vector3(x, 0.55, -1.1), Kit.mat(Color("fff3b0"), 3.0), Vector3(1, 1, 0.5))
 	for x in [-0.78, 0.78]:
 		for z in [-0.7, 0.7]:
 			Kit.cylinder(_truck, 0.3, 0.3, 0.24, Vector3(x, 0.3, z), Kit.mat(Color("222831")), 16, Vector3(0, 0, PI / 2))
 	var tons: int = LEVELS[_level][1]
 	for k in tons:
 		Kit.box(_truck, Vector3(0.55, 0.36, 0.55), Vector3(-0.3 + 0.6 * (k % 2), 0.92 + 0.38 * int(k / 2.0), 0.45), Kit.mat(Color("8a96a8"), 0.0, 0.6))
-	Kit.label(_truck, "%d t" % tons, Vector3(0, 2.6, 0.3), 64, Color("1d2a3a"))
+	Kit.label(_truck, "%d t" % tons, Vector3(0, 2.6, 0.3), 64, Color.WHITE)
+	Kit.bake(_truck)

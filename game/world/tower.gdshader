@@ -1,24 +1,25 @@
 shader_type spatial;
 // Torre de juguete estilo Astro Bot: plástico brillante de color caramelo, filas de ojos de buey
-// que brillan al azar y un borde de luz (fresnel). Color y semilla cambian por torre.
+// que brillan al azar y un borde de luz (fresnel). El color (rgb) y la semilla (alfa) de cada torre
+// llegan en los vértices: Kit.bake funde todas las torres de un trozo en una sola malla.
 
-instance uniform vec3 body_color : source_color = vec3(1.0);
-instance uniform vec3 light_color : source_color = vec3(0.3, 0.85, 1.0);
-instance uniform float seed = 0.0;
+uniform vec3 light_color : source_color = vec3(0.3, 0.85, 1.0);
 
 varying vec3 world_pos;
 varying vec3 world_normal;
+varying vec3 body_color;
+varying float seed;
 
 void vertex() {
 	world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	world_normal = normalize((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
+	body_color = mix(pow((COLOR.rgb + 0.055) / 1.055, vec3(2.4)), COLOR.rgb / 12.92, lessThan(COLOR.rgb, vec3(0.04045)));  // sRGB → lineal
+	seed = COLOR.a * 100.0;
 }
 
 void fragment() {
 	ALBEDO = body_color;
-	ROUGHNESS = 0.2;
-	CLEARCOAT = 0.8;
-	CLEARCOAT_ROUGHNESS = 0.08;
+	ROUGHNESS = 0.16;
 	if (abs(world_normal.y) < 0.5 && world_pos.y > 1.6) {
 		vec2 cell = vec2(UV.x * 14.0, world_pos.y / 2.6);
 		float d = length((fract(cell) - 0.5) * vec2(1.0, 1.3));
