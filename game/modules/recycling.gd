@@ -58,7 +58,7 @@ func _ready() -> void:
 		var area := Kit.interactable(self, spec[0], base + Vector3(0, 1, 0.6), 1.5)
 		area.interacted.connect(_throw.bind(id))
 		_bins[id] = [area, lid]
-	_board = Kit.label(self, "RECICLAJE\nPulsa E en el atril para empezar", Vector3(0, 3.6, -6), 56, Color.WHITE)
+	_board = Kit.label(self, "RECICLAJE\nUsa el atril para empezar", Vector3(0, 3.6, -6), 56, Color.WHITE)
 	Kit.bake(self)
 
 
@@ -163,7 +163,7 @@ func _finish() -> void:
 	Game.set_stars("recycling", stars)
 	for id: String in BINS:
 		Fx.confetti(self, Vector3(BINS[id][2], 2.2, -6))
-	_board.text = "¡CIUDAD LIMPIA!  %s\n%d errores. Pulsa E en el atril para repetir" % [UI.stars(stars), _mistakes]
+	_board.text = "¡CIUDAD LIMPIA!  %s\n%d errores. Usa el atril para repetir" % [UI.stars(stars), _mistakes]
 
 
 func _refresh() -> void:

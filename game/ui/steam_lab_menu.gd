@@ -75,7 +75,7 @@ func _build() -> void:
 	for id: String in Game.LAB_MODULES:
 		grid.add_child(_card(_text(id), Game.LAB_MODULES[id].color, _choose.bind(id)))
 
-	var hint := UI.label("ELIGE UN RETO PARA VIAJAR A SU DISTRITO   ·   ESC  CERRAR", "Caption")
+	var hint := UI.label("ELIGE UN RETO PARA VIAJAR A SU DISTRITO   ·   ESC / B  CERRAR", "Caption")
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(hint)
 

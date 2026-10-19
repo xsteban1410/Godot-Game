@@ -140,7 +140,7 @@ func say(text: String, greet := false) -> void:
 		_voice.stream = load(path)
 		_voice.play()
 		_quiet = _voice.stream.get_length()
-	_robot.play("Wave" if greet else "Yes", 0.2)
+	_robot.play("Wave" if greet else "Cheer" if text.begins_with("¡") else "Yes", 0.2)  # saluda, anima o asiente
 	_gesture = 1.8
 
 

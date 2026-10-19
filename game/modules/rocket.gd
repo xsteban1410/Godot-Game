@@ -149,7 +149,7 @@ func _on_pad() -> void:
 		"water":
 			_stage = "pump"
 			_pressure = 0.0
-			_pad.prompt = "BOMBEAR AIRE (pulsa E varias veces)"
+			_pad.prompt = "BOMBEAR AIRE (púlsalo varias veces)"
 			Game.notify("Agua: %d %%. Ahora bombea aire hasta la zona verde." % roundi(_water * 100), Game.TEXT)
 		"pump":
 			_pressure += 0.11

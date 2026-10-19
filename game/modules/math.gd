@@ -64,7 +64,7 @@ func start() -> void:
 	_index = 0
 	_mistakes = 0
 	Sfx.play("pickup")
-	Game.notify("Salta y pulsa ESPACIO otra vez en el aire: ¡el jetpack te sube! Mantén para volar.", Game.TEAL)
+	Game.notify("Salta y, en el aire, vuelve a saltar: ¡el jetpack te sube! Mantenlo para volar.", Game.TEAL)
 	_show_question()
 
 
@@ -150,4 +150,4 @@ func _finish() -> void:
 	_index = -1
 	for i in PADS.size():
 		_numbers[i].text = "★"
-	_board.text = "¡RONDA COMPLETA!  %s\n%d errores. Pulsa E en el atril para repetir" % [UI.stars(stars), _mistakes]
+	_board.text = "¡RONDA COMPLETA!  %s\n%d errores. Usa el atril para repetir" % [UI.stars(stars), _mistakes]

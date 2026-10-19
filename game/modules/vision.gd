@@ -172,11 +172,11 @@ func _analyze() -> void:
 
 func _show_goal() -> void:
 	if not _playing:
-		_board.text = "VISIÓN IA · pulsa E en el atril" if int(Game.stars.get("vision", 0)) < 3 else "¡LA IA RECONOCE TODAS TUS FIGURAS!"
+		_board.text = "VISIÓN IA · usa el atril" if int(Game.stars.get("vision", 0)) < 3 else "¡LA IA RECONOCE TODAS TUS FIGURAS!"
 		_results.text = "Para la IA, una imagen\nes una cuadrícula\nde números"
 	else:
 		_board.text = "DIBUJA:  %s  (%d / %d)" % [GOALS[_level], _level + 1, GOALS.size()]
-		_results.text = "Pisa las baldosas\ny pulsa E en el atril\npara que la IA mire"
+		_results.text = "Pisa las baldosas\ny usa el atril\npara que la IA mire"
 	_show_matrix()
 
 

@@ -80,7 +80,7 @@ func _refresh() -> void:
 	for i in SLOT_Z.size():
 		var holds: String = "VACÍO" if _slots[i] < 0 else "%s · aguanta %d t" % [MATERIALS[_slots[i]][0], MATERIALS[_slots[i]][2]]
 		_slot_areas[i].prompt = "TRAMO %d · necesita %s t · %s  →  cambiar" % [i + 1, String.num(level[1] * FACTORS[i]), holds]
-	_board.text = "NIVEL %d / 3 · %s DE %d t\nPRESUPUESTO: %d / %d CR\n\nMADERA  10 CR · 3 t\nMETAL  25 CR · 6 t\nHORMIGÓN  40 CR · 10 t\n\nE en un tramo: cambiar material" % [
+	_board.text = "NIVEL %d / 3 · %s DE %d t\nPRESUPUESTO: %d / %d CR\n\nMADERA  10 CR · 3 t\nMETAL  25 CR · 6 t\nHORMIGÓN  40 CR · 10 t\n\nUsa cada tramo para cambiar su material" % [
 		_level + 1, level[0], level[1], cost(), level[2]]
 
 

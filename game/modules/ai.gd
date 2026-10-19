@@ -60,7 +60,7 @@ func start() -> void:
 			_pieces[i] = null
 	_playing = true
 	Sfx.play("pickup")
-	_say("NIVEL %d · %s\nTu turno: E en una casilla" % [_level + 1, LEVELS[_level]])
+	_say("NIVEL %d · %s\nTu turno: elige una casilla" % [_level + 1, LEVELS[_level]])
 
 
 func _on_cell(i: int) -> void:
@@ -96,7 +96,7 @@ func _nova_turn() -> void:
 	_nova.rotation.y = -PI / 2
 	_robot.play("Idle", 0.25)
 	if not await _check_end():
-		_say("NIVEL %d · %s\nTu turno: E en una casilla" % [_level + 1, LEVELS[_level]])
+		_say("NIVEL %d · %s\nTu turno: elige una casilla" % [_level + 1, LEVELS[_level]])
 
 
 ## Casilla que elige NOVA (ficha 2) según su nivel.
@@ -170,7 +170,7 @@ func _check_end() -> bool:
 		Fx.confetti(self, Vector3(0, 1.5, -4.0))
 		Game.set_stars("ai", _level + 1)
 		var text := "¡Empataste contra la IA perfecta! Minimax nunca pierde: es lo máximo posible." if w == 0 else "¡Ganaste a NOVA!"
-		_say(text + "\nE en el atril para jugar otra vez")
+		_say(text + "\nUsa el atril para jugar otra vez")
 		if _level < LEVELS.size() - 1:
 			_level += 1
 			text += " Siguiente nivel: " + LEVELS[_level]
@@ -178,7 +178,7 @@ func _check_end() -> bool:
 	else:
 		Sfx.play("error")
 		_nova_cheer()
-		_say(("¡NOVA gana!" if w == 2 else "¡Empate!") + "\nE en el atril para la revancha")
+		_say(("¡NOVA gana!" if w == 2 else "¡Empate!") + "\nUsa el atril para la revancha")
 		Game.notify("Pista: amenaza dos rayas a la vez; NOVA solo puede tapar una." if _level == 1 else "¡Inténtalo otra vez!", Game.GOLD)
 	await get_tree().create_timer(0.8).timeout
 	return true

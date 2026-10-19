@@ -26,7 +26,7 @@ func _ready() -> void:
 	_grid.position.y = 0.1  # sobre la plataforma del reto (si no, las casillas quedaban hundidas)
 	add_child(_grid)
 	Kit.banner(self, "ENERGÍA DE LA BASE", Vector3(0, 5.0, 2.0), 110, Game.info("moon_power").color)
-	Kit.banner(self, "E en un cable: girarlo. Lleva la luz al fundidor de hielo.", Vector3(0, 4.0, 2.0), 46, Color.WHITE)
+	Kit.banner(self, "Gira los cables y lleva la luz al fundidor de hielo.", Vector3(0, 4.0, 2.0), 46, Color.WHITE)
 	_new_grid()
 
 
