@@ -113,7 +113,7 @@ func _mission_list(title: String, modules: Dictionary) -> void:
 	for id: String in modules:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 10)
-		row.add_child(UI.label("●", "", modules[id].color))
+		row.add_child(UI.label("•", "Title", modules[id].color))  # «●» no está en Rubik: en Windows salía un cuadro
 		var label := UI.label(modules[id].name)
 		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(label)
