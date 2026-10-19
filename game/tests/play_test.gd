@@ -100,6 +100,7 @@ func _run() -> void:
 	button.button_index = JOY_BUTTON_BACK  # un botón sin acción: solo cambia el aviso
 	button.pressed = true
 	Input.parse_input_event(button)
+	button = button.duplicate() as InputEventJoypadButton  # (un mismo evento dos veces en un fotograma no es seguro)
 	button.pressed = false
 	Input.parse_input_event(button)
 	await _frames(1)
@@ -107,6 +108,31 @@ func _run() -> void:
 	_press_key(KEY_F12)
 	await _frames(1)
 	_check(pad_key == "X" and hud._key.text == "E", "el aviso muestra X tras usar el mando y E tras usar el teclado")
+
+	# --- Fase 16: Eevee, la robot guía ---
+	var eevee: Node3D = _find("next_step")
+	_check(eevee.all_lines().all(func(t: String) -> bool: return ResourceLoader.exists(eevee.voice_path(t))), "cada frase de Eevee tiene su voz grabada e importada")
+	_check(eevee._greeted.has("city"), "al empezar, Eevee da la bienvenida (aunque ya estés en la plaza)")
+	eevee._quiet = 0.0  # (que termine la frase que esté diciendo)
+	player.place(current_scene.DISTRICTS.solar + Vector3(0, 0.5, 6), 0.0)
+	await _frames(10)
+	var solar_zone: Dictionary = eevee._zone("solar")
+	_check(eevee.visible and eevee._text.text == solar_zone.saludo and eevee._voice.stream != null, "al pisar el distrito solar, Eevee baja y lo explica con voz")
+	_press("eevee")
+	await _frames(2)
+	_check(_game.is_locked() and _game.wants_cursor() and eevee._menu != null, "F abre el panel de Eevee con el cursor")
+	var question: Dictionary = solar_zone.preguntas[1]
+	_button(eevee, question.pregunta).pressed.emit()
+	_check(eevee._text.text == question.respuesta, "las preguntas del panel son las de la zona en lineas.json")
+	_button(eevee, eevee.data().general.boton_despues).pressed.emit()
+	_check(eevee._text.text == eevee.data().historia.estrellas, "«¿Qué hago después?» sigue la historia")
+	_press("pause")
+	await _frames(2)
+	_check(eevee._menu == null and not _game.is_locked(), "ESC cierra el panel de Eevee y devuelve el control")
+	_game.push_lock(self)
+	await _frames(2)
+	_check(not eevee._shown, "con un reto abierto, Eevee se calla y se va")
+	_game.pop_lock(self)
 	_check(current_scene._robots.size() == 5, "Volt y cuatro robots ciudadanos pasean por la ciudad")
 	var bolts: Array = current_scene.find_children("*", "", true, false).filter(_is_bolt)
 	_check(bolts.size() == 22, "la ciudad tiene 22 tuercas doradas (%d)" % bolts.size())
@@ -358,6 +384,9 @@ func _run() -> void:
 	await _frames(500)
 	var astronaut: CharacterBody3D = get_first_node_in_group("player")
 	_check(astronaut.gravity < 4.0 and astronaut.visible and not _game.is_locked(), "en la Luna: gravedad 1/6 y control tras el aterrizaje")
+	await _frames(2)
+	var guide: Node3D = _find("next_step")
+	_check(guide.home == "moon" and guide._text.text == guide._zone("moon").saludo, "al aterrizar en la Luna, Eevee la presenta")
 
 	_check(_find("_moon_done")._pad.prompt.ends_with("(0 / 4 retos)"), "sin los retos lunares el cohete no puede volver")
 	_check("(0 / 4)" in current_scene.get_node("HUD").objective(true), "en la Luna, el objetivo son los 4 retos lunares")
