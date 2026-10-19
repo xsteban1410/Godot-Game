@@ -27,10 +27,10 @@ static func toy(source: Material) -> Material:
 
 ## Modelo .glb de res://models/ (`path` sin extensión, p. ej. "kenney/nature/tree_oak") colocado con `xf` en
 ## `parent`: sus mallas pasan a ser hijos directos (así Kit.bake las funde con lo demás) con materiales de juguete;
-## las superficies con textura de paleta la conservan, o usan `textured` si se da. `solid`: con colisión de caja.
+## las superficies con textura de paleta la conservan, o usan `textured` si se da. `collide`: con colisión de caja.
 ## `colors`: nombre de material -> Color (o Material) para recolorear, p. ej. las rocas rojizas de Kenney en la Luna.
 ## El modelo se centra en su huella (el Space Kit trae el origen en una esquina). Devuelve su caja en coordenadas de `parent`.
-static func model(parent: Node3D, path: String, xf: Transform3D, solid := false, textured: Material = null, colors := {}) -> AABB:
+static func model(parent: Node3D, path: String, xf: Transform3D, collide := false, textured: Material = null, colors := {}) -> AABB:
 	if not _scenes.has(path):
 		_scenes[path] = load("res://models/%s.glb" % path)
 	var scene: Node3D = _scenes[path].instantiate()
@@ -48,7 +48,7 @@ static func model(parent: Node3D, path: String, xf: Transform3D, solid := false,
 		footprint = bounds if locals.size() == 1 else footprint.merge(bounds)
 	var center := footprint.get_center()
 	var recenter := Transform3D(Basis(), Vector3(-center.x, 0.0, -center.z))
-	var box := AABB()
+	var aabb := AABB()
 	for m in meshes.size():
 		var mesh: MeshInstance3D = meshes[m]
 		var piece := MeshInstance3D.new()
@@ -64,19 +64,19 @@ static func model(parent: Node3D, path: String, xf: Transform3D, solid := false,
 			piece.set_surface_override_material(i, material)
 		parent.add_child(piece)
 		var bounds := piece.transform * mesh.mesh.get_aabb()
-		box = bounds if box.size == Vector3.ZERO else box.merge(bounds)
+		aabb = bounds if aabb.size == Vector3.ZERO else aabb.merge(bounds)
 	scene.free()
-	if solid:
-		collider(parent, box.size, box.get_center())
-	return box
+	if collide:
+		collider(parent, aabb.size, aabb.get_center())
+	return aabb
 
 
 ## Caja envolvente del modelo sin colocar (para escalarlo antes de ponerlo).
 static func model_size(path: String) -> AABB:
 	var probe := Node3D.new()
-	var box := model(probe, path, Transform3D.IDENTITY)
+	var aabb := model(probe, path, Transform3D.IDENTITY)
 	probe.free()
-	return box
+	return aabb
 
 
 ## Plástico de juguete estilo Astro Bot: brillante y con un borde de luz que separa la silueta.
@@ -392,11 +392,11 @@ static func stand(parent: Node3D, pos: Vector3, color: Color, prompt: String) ->
 	torus(parent, 0.5, 0.66, pos + Vector3(0, 1.0, 0), mat(color.lightened(0.3), 1.5))
 	sphere(parent, 0.46, pos + Vector3(0, 1.02, 0), mat(color, 0.5), Vector3(1, 0.42, 1))
 	pillar(parent, 0.8, 1.2, pos + Vector3(0, 0.6, 0))
-	var sign := label(parent, "¡JUGAR!", pos + Vector3(0, 2.1, 0), 60, color.lightened(0.25), true, 0.009)
-	sign.outline_size = 14
-	var bob := sign.create_tween().set_loops()
-	bob.tween_property(sign, "position:y", pos.y + 2.35, 0.7).set_trans(Tween.TRANS_SINE)
-	bob.tween_property(sign, "position:y", pos.y + 2.1, 0.7).set_trans(Tween.TRANS_SINE)
+	var tag := label(parent, "¡JUGAR!", pos + Vector3(0, 2.1, 0), 60, color.lightened(0.25), true, 0.009)
+	tag.outline_size = 14
+	var bob := tag.create_tween().set_loops()
+	bob.tween_property(tag, "position:y", pos.y + 2.35, 0.7).set_trans(Tween.TRANS_SINE)
+	bob.tween_property(tag, "position:y", pos.y + 2.1, 0.7).set_trans(Tween.TRANS_SINE)
 	return interactable(parent, prompt, pos + Vector3(0, 1, 0), 2.2)
 
 

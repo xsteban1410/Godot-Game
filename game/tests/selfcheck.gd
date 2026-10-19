@@ -113,6 +113,7 @@ func _initialize() -> void:
 			"" if silent.is_empty() else " (faltan %d: pasa tools/voice.gd; la primera: «%s»)" % [silent.size(), silent[0]]])
 
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(game.save_path))
+	game._fade.free()  # sin _ready no cuelga de nadie: se liberaría solo al salir, como fuga
 	game.free()
 	print("SELFCHECK %s (%d fallos)" % ["OK" if _failures == 0 else "FALLÓ", _failures])
 	quit(1 if _failures else 0)

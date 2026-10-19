@@ -60,9 +60,9 @@ static func all_lines() -> Array[String]:
 	var lines: Array[String] = [str(data().get("general", {}).get("ayuda", ""))]
 	for text: Variant in data().get("historia", {}).values():
 		lines.append(str(text))
-	for zone: Dictionary in data().get("zonas", {}).values():
-		lines.append(str(zone.get("saludo", "")))
-		for q: Dictionary in zone.get("preguntas", []):
+	for area: Dictionary in data().get("zonas", {}).values():
+		lines.append(str(area.get("saludo", "")))
+		for q: Dictionary in area.get("preguntas", []):
 			lines.append(str(q.get("respuesta", "")))
 	return lines.filter(func(t: String) -> bool: return not t.is_empty())
 

@@ -259,12 +259,12 @@ func _footprint() -> void:
 		_prints.material_override = Kit.mat(Color("6e7279"), 0.0, 0.0, 1.0)
 		_prints.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		get_parent().add_child(_prints)
-	var prints := _prints.multimesh
+	var steps := _prints.multimesh
 	var side := 0.14 if _print_count % 2 == 0 else -0.14
-	prints.set_instance_transform(_print_count % MAX_PRINTS, Transform3D(Basis(Vector3.UP, _avatar.rotation.y),
+	steps.set_instance_transform(_print_count % MAX_PRINTS, Transform3D(Basis(Vector3.UP, _avatar.rotation.y),
 		global_position + _avatar.global_basis.x * side + Vector3(0, 0.006, 0)))
 	_print_count += 1
-	prints.visible_instance_count = mini(_print_count, MAX_PRINTS)  # las más viejas se reutilizan
+	steps.visible_instance_count = mini(_print_count, MAX_PRINTS)  # las más viejas se reutilizan
 
 
 ## Aterrizaje: aplastón, polvo y sacudida proporcionales a la velocidad de caída.

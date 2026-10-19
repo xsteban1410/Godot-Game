@@ -138,8 +138,8 @@ func _rocks(rng: RandomNumberGenerator) -> void:
 			continue
 		placed += 1
 		var kind: String = kinds[rng.randi() % kinds.size()]
-		var scale := rng.randf_range(2.5, 5.0)
-		Kit.model(self, "kenney/space/" + kind, Transform3D(Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3.ONE * scale), p),
+		var size := rng.randf_range(2.5, 5.0)
+		Kit.model(self, "kenney/space/" + kind, Transform3D(Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3.ONE * size), p),
 			kind.begins_with("rock_large"), null, Kit.MOON_ROCK)
 
 
