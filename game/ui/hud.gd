@@ -60,7 +60,7 @@ func _ready() -> void:
 	_prompt_label = UI.label("")
 	row.add_child(_prompt_label)
 	column.add_child(_prompt)
-	column.add_child(UI.label("WASD mover  ·  RATÓN cámara  ·  SHIFT correr  ·  ESPACIO saltar (otra vez en el aire: JETPACK)  ·  E interactuar  ·  F Eevee  ·  RUEDA zoom  ·  MANDO: A saltar, X usar, Y Eevee", "Caption"))
+	column.add_child(UI.label("WASD mover  ·  RATÓN cámara  ·  SHIFT correr  ·  ESPACIO saltar (otra vez en el aire: JETPACK)  ·  E interactuar  ·  F Ivy  ·  RUEDA zoom  ·  MANDO: A saltar, X usar, Y Ivy", "Caption"))
 
 	_celebration.layer = 50  # por encima de los paneles de los retos
 	add_child(_celebration)

@@ -94,12 +94,12 @@ func _ready() -> void:
 		var side: Vector3 = dir.cross(Vector3.UP) * spec[2]  # a un lado de la calle, fuera de las luces guía
 		_walker(spec[1], PackedVector3Array([dir * 19.0 + side, dir * 30.0 + side]))
 	_bolts()
-	var eevee := Eevee.new()  # la robot guía: saluda en la calle, en la plaza, en cada distrito y en el cohete
-	add_child(eevee)
-	eevee.zone("plaza", Vector3.ZERO, PLAZA_RADIUS)
+	var ivy := Ivy.new()  # la robot guía: saluda en la calle, en la plaza, en cada distrito y en el cohete
+	add_child(ivy)
+	ivy.zone("plaza", Vector3.ZERO, PLAZA_RADIUS)
 	for id: String in DISTRICTS:
-		eevee.zone(id, DISTRICTS[id], DISTRICT_RADIUS)
-	eevee.zone("rocket", LAUNCH, 6.0)
+		ivy.zone(id, DISTRICTS[id], DISTRICT_RADIUS)
+	ivy.zone("rocket", LAUNCH, 6.0)
 	$SteamLab.travel_requested.connect(_travel_to_district)
 	Game.stars_changed.connect(_on_stars_changed)
 

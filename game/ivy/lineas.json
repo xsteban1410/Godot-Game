@@ -1,0 +1,292 @@
+{
+  "pronunciacion": {
+    "Ivy": "Iví",
+    "STEAM": "Estim",
+    "LAB": "lab",
+    "jetpack": "yetpak"
+  },
+  "general": {
+    "ayuda": "¿En qué te ayudo? Elige una pregunta.",
+    "boton_despues": "¿Qué hago después?",
+    "boton_cerrar": "¡Gracias, Ivy!"
+  },
+  "historia": {
+    "estrellas": "Gana estrellas en los retos de la ciudad: cada una es una pieza del cohete. Necesitas doce.",
+    "lanzar": "¡El cohete está completo! Ve a la plataforma de lanzamiento, donde brilla el haz de luz, y viaja a la Luna.",
+    "hielo": "Completa los cuatro retos lunares para conseguir agua. Sigue las balizas de colores.",
+    "volver": "¡Ya tienes agua! Vuelve al cohete y regresa a la Tierra.",
+    "todo": "¡Misión cumplida! Ahora consigue las tres estrellas en todos los retos y busca las tuercas doradas para el traje dorado."
+  },
+  "zonas": {
+    "city": {
+      "lugar": "Calles de la ciudad. Su saludo es la bienvenida: suena siempre primero al empezar.",
+      "saludo": "¡Hola! Soy Ivy, tu robot guía. Tu misión es ganar estrellas en los retos para construir un cohete de agua y viajar a la Luna. Si tienes dudas, pulsa F, o Y en el mando, y pregúntame.",
+      "preguntas": [
+        {
+          "pregunta": "¿Qué hago aquí?",
+          "respuesta": "Sigue las calles de colores: cada una lleva a un reto. También puedes ir al holograma azul del centro y viajar desde el STEAM LAB."
+        },
+        {
+          "pregunta": "¿Cómo se gana?",
+          "respuesta": "Cada reto da hasta tres estrellas, y cada estrella es una pieza del cohete. Con doce piezas, el cohete puede despegar."
+        },
+        {
+          "pregunta": "¿Qué aprendo aquí?",
+          "respuesta": "Busca las tuercas doradas escondidas por la ciudad. Salta y, en el aire, vuelve a saltar para encender el jetpack: desde arriba se ven mejor."
+        }
+      ]
+    },
+    "plaza": {
+      "lugar": "Plaza central con el holograma del STEAM LAB.",
+      "saludo": "¡Este es el STEAM LAB, el centro de la ciudad! Desde el holograma azul puedes viajar a cualquier reto.",
+      "preguntas": [
+        {
+          "pregunta": "¿Qué hago aquí?",
+          "respuesta": "Acércate al holograma azul y úsalo para abrir el STEAM LAB. Ahí eliges un reto y viajas directo a su distrito."
+        },
+        {
+          "pregunta": "¿Cómo se gana?",
+          "respuesta": "En el STEAM LAB ves las estrellas de cada reto. Consigue las tres en todos para ser experto en STEAM."
+        },
+        {
+          "pregunta": "¿Qué aprendo aquí?",
+          "respuesta": "STEAM son las iniciales en inglés de ciencia, tecnología, ingeniería, arte y matemáticas. ¡En esta ciudad hay retos de todas!"
+        }
+      ]
+    },
+    "solar": {
+      "lugar": "Distrito de Energía solar (la casa solar).",
+      "saludo": "¡Llegaste al distrito de energía solar! Usa el atril y responde preguntas para encender la casa solar.",
+      "preguntas": [
+        {
+          "pregunta": "¿Qué hago aquí?",
+          "respuesta": "Acércate al atril y úsalo para empezar. Responde cinco preguntas sobre energía solar: cada acierto enciende una ventana de la casa."
+        },
+        {
+          "pregunta": "¿Cómo se gana?",
+          "respuesta": "Si aciertas todo a la primera, ganas tres estrellas. Cada fallo resta puntos, pero siempre puedes intentarlo otra vez."
+        },
+        {
+          "pregunta": "¿Qué aprendo aquí?",
+          "respuesta": "Los paneles solares convierten la luz del Sol en electricidad, y una batería guarda esa energía para usarla de noche."
+        }
+      ]
+    },
+    "bridge": {
+      "lugar": "Distrito de Ingeniería (el puente).",
+      "saludo": "¡Este es el distrito de ingeniería! Construye un puente que aguante el peso del camión sin pasarte del presupuesto.",
+      "preguntas": [
+        {
+          "pregunta": "¿Qué hago aquí?",
+          "respuesta": "Usa cada tramo del puente para cambiar su material: madera, metal u hormigón. Después pulsa el botón rojo para probarlo."
+        },
+        {
+          "pregunta": "¿Cómo se gana?",
+          "respuesta": "El centro del puente carga más peso que los extremos. Pon lo más fuerte en el centro y lo más barato en los apoyos."
+        },
+        {
+          "pregunta": "¿Qué aprendo aquí?",
+          "respuesta": "Los ingenieros eligen cada material por su resistencia y su costo. Un buen diseño es seguro y no desperdicia dinero."
+        }
+      ]
+    },
+    "robotics": {
+      "lugar": "Distrito de Robótica (el tablero del robot).",
+      "saludo": "¡Este es el distrito de robótica! Programa al robot con órdenes para que llegue a la estrella sin chocar.",
+      "preguntas": [
+        {
+          "pregunta": "¿Qué hago aquí?",
+          "respuesta": "Usa el atril para abrir el tablero. Añade órdenes de avanzar y girar, y luego ejecútalas para ver si el robot llega a la meta."
+        },
+        {
+          "pregunta": "¿Cómo se gana?",
+          "respuesta": "Piensa el camino antes de ejecutar. Los giros son a la izquierda o a la derecha del robot, no a las tuyas."
+        },
+        {
+          "pregunta": "¿Qué aprendo aquí?",
+          "respuesta": "Un programa es una lista de instrucciones que se cumplen en orden, una tras otra. Así funcionan los robots de verdad."
+        }
+      ]
+    },
+    "recycling": {
+      "lugar": "Distrito de Reciclaje (las canecas).",
+      "saludo": "¡Este es el distrito de reciclaje! Recoge los residuos y lánzalos a la caneca correcta.",
+      "preguntas": [
+        {
+          "pregunta": "¿Qué hago aquí?",
+          "respuesta": "Usa el atril para que aparezcan los residuos. Recoge uno y, junto a una caneca, lánzalo dentro."
+        },
+        {
+          "pregunta": "¿Cómo se gana?",
+          "respuesta": "Verde para los orgánicos, blanca para lo aprovechable limpio y negra para lo que no se puede aprovechar. Sin errores ganas tres estrellas."
+        },
+        {
+          "pregunta": "¿Qué aprendo aquí?",
+          "respuesta": "En Colombia separamos los residuos en tres colores. Separar bien ayuda a que el plástico, el papel y el vidrio se vuelvan a usar."
+        }
+      ]
+    },
+    "math": {
+      "lugar": "Reto de Matemáticas (plataformas flotantes).",
+      "saludo": "¡Este es el reto de matemáticas! Resuelve la operación y vuela con el jetpack hasta la plataforma con la respuesta.",
+      "preguntas": [
+        {
+          "pregunta": "¿Qué hago aquí?",
+          "respuesta": "Usa el atril para empezar. Salta y, en el aire, vuelve a saltar: el jetpack te sube hasta las plataformas."
+        },
+        {
+          "pregunta": "¿Cómo se gana?",
+          "respuesta": "Aterriza en la plataforma con la respuesta correcta. Si te equivocas, te lanza fuera. Seis respuestas sin errores dan tres estrellas."
+        },
+        {
+          "pregunta": "¿Qué aprendo aquí?",
+          "respuesta": "Aquí hay sumas, restas, multiplicaciones, divisiones, porcentajes y áreas. Calcula con calma antes de despegar."
+        }
+      ]
+    },
+    "vision": {
+      "lugar": "Reto de Visión IA (las baldosas).",
+      "saludo": "¡Este es el reto de visión artificial! Dibuja figuras pisando las baldosas, y la cámara inteligente intentará reconocerlas.",
+      "preguntas": [
+        {
+          "pregunta": "¿Qué hago aquí?",
+          "respuesta": "Usa el atril para empezar. Pisa una baldosa para encenderla o apagarla, y salta para no pisar las que no quieres."
+        },
+        {
+          "pregunta": "¿Cómo se gana?",
+          "respuesta": "Dibuja la figura que pide la pantalla y vuelve al atril. Si la inteligencia artificial está segura al setenta por ciento, ganas la estrella."
+        },
+        {
+          "pregunta": "¿Qué aprendo aquí?",
+          "respuesta": "Para una computadora, una imagen es una cuadrícula de números. La inteligencia artificial compara esos números con ejemplos que ya conoce."
+        }
+      ]
+    },
+    "ai": {
+      "lugar": "Desafío IA (tres en raya contra NOVA).",
+      "saludo": "¡Este es el desafío de inteligencia artificial! Juega tres en raya contra Nova, una inteligencia artificial que piensa sus jugadas.",
+      "preguntas": [
+        {
+          "pregunta": "¿Qué hago aquí?",
+          "respuesta": "Usa el atril para empezar y luego una casilla para poner tu ficha. Nova juega después de ti."
+        },
+        {
+          "pregunta": "¿Cómo se gana?",
+          "respuesta": "En el nivel dos, amenaza dos rayas a la vez: Nova solo puede tapar una. En el nivel tres Nova nunca pierde, así que empatar ya es ganar."
+        },
+        {
+          "pregunta": "¿Qué aprendo aquí?",
+          "respuesta": "Nova usa un algoritmo llamado minimax: imagina todas las partidas posibles y elige la mejor jugada."
+        }
+      ]
+    },
+    "rocket": {
+      "lugar": "Plataforma de lanzamiento del cohete.",
+      "saludo": "¡Esta es la plataforma de lanzamiento! Cada estrella que ganes en los retos añade una pieza al cohete de agua.",
+      "preguntas": [
+        {
+          "pregunta": "¿Qué hago aquí?",
+          "respuesta": "Con las doce piezas, usa la plataforma: llena el cohete de agua, bombea aire hasta la zona verde y ¡despega!"
+        },
+        {
+          "pregunta": "¿Cómo se gana?",
+          "respuesta": "Llénalo más o menos un tercio de agua: con poca no hay empuje y con mucha pesa demasiado. Bombea con calma para no hacer saltar la válvula."
+        },
+        {
+          "pregunta": "¿Qué aprendo aquí?",
+          "respuesta": "El aire a presión empuja el agua hacia abajo y el cohete sube. Es la tercera ley de Newton: acción y reacción."
+        }
+      ]
+    },
+    "moon": {
+      "lugar": "La Luna. Su saludo suena al aterrizar, antes que ningún otro.",
+      "saludo": "¡Llegamos a la Luna! Aquí la gravedad es seis veces menor que en la Tierra, así que saltas mucho más alto. Sigue las balizas de colores hasta los retos.",
+      "preguntas": [
+        {
+          "pregunta": "¿Qué hago aquí?",
+          "respuesta": "Necesitas agua para volver a casa. Completa los cuatro retos lunares siguiendo las balizas de colores, y luego vuelve al cohete."
+        },
+        {
+          "pregunta": "¿Cómo se gana?",
+          "respuesta": "Gana al menos una estrella en cada reto lunar: el cráter del hielo, el rover, la energía de la base y el purificador."
+        },
+        {
+          "pregunta": "¿Qué aprendo aquí?",
+          "respuesta": "La Luna no tiene aire ni lluvia, pero en los cráteres donde nunca da el Sol queda hielo. ¡Ese hielo será tu combustible!"
+        }
+      ]
+    },
+    "moon_jump": {
+      "lugar": "Luna: cráter del hielo (salto lunar).",
+      "saludo": "¡Este es el cráter del hielo! Sube por las plataformas saltando: con la gravedad lunar llegas muy alto.",
+      "preguntas": [
+        {
+          "pregunta": "¿Qué hago aquí?",
+          "respuesta": "Salta de plataforma en plataforma hasta arriba y toca los cristales de hielo."
+        },
+        {
+          "pregunta": "¿Cómo se gana?",
+          "respuesta": "Hay tres cristales de hielo y cada uno es una estrella. Si te quedas corto, usa el jetpack."
+        },
+        {
+          "pregunta": "¿Qué aprendo aquí?",
+          "respuesta": "En la Luna pesas seis veces menos. Por eso el mismo salto te lleva más alto y caes despacio."
+        }
+      ]
+    },
+    "moon_rover": {
+      "lugar": "Luna: rover explorador.",
+      "saludo": "¡Este es el reto del rover! Prográmalo para que llegue hasta el hielo sin chocar con las rocas.",
+      "preguntas": [
+        {
+          "pregunta": "¿Qué hago aquí?",
+          "respuesta": "Usa el atril y programa el rover con avanzar y girar, igual que el robot de la ciudad."
+        },
+        {
+          "pregunta": "¿Cómo se gana?",
+          "respuesta": "Planea el camino entre las rocas antes de ejecutar. Hay tres niveles, cada uno con más rocas."
+        },
+        {
+          "pregunta": "¿Qué aprendo aquí?",
+          "respuesta": "Los rovers de verdad se programan desde la Tierra. La señal tarda en llegar, así que siguen sus órdenes sin ayuda."
+        }
+      ]
+    },
+    "moon_power": {
+      "lugar": "Luna: energía de la base (cables).",
+      "saludo": "¡Este es el reto de energía de la base! Gira las piezas de cable para llevar la luz de los paneles solares hasta el fundidor de hielo.",
+      "preguntas": [
+        {
+          "pregunta": "¿Qué hago aquí?",
+          "respuesta": "Usa una pieza de cable para girarla. El cable se pone dorado hasta donde llega la corriente."
+        },
+        {
+          "pregunta": "¿Cómo se gana?",
+          "respuesta": "Empieza desde los paneles y avanza pieza a pieza. Cuando la corriente llegue al fundidor, ganas la estrella."
+        },
+        {
+          "pregunta": "¿Qué aprendo aquí?",
+          "respuesta": "En la Luna no hay nubes, así que los paneles solares reciben luz todo el día lunar, que dura unas dos semanas."
+        }
+      ]
+    },
+    "moon_water": {
+      "lugar": "Luna: purificador de agua.",
+      "saludo": "¡Este es el purificador de agua! Llena el filtro con las capas en el orden correcto y vierte el agua del hielo.",
+      "preguntas": [
+        {
+          "pregunta": "¿Qué hago aquí?",
+          "respuesta": "Usa cada caja para poner su capa en el filtro, empezando por abajo. Luego vierte el agua."
+        },
+        {
+          "pregunta": "¿Cómo se gana?",
+          "respuesta": "Abajo va el carbón activado, en medio la arena y arriba la grava. Si aciertas a la primera, ganas tres estrellas."
+        },
+        {
+          "pregunta": "¿Qué aprendo aquí?",
+          "respuesta": "La grava frena lo grueso, la arena atrapa lo fino y el carbón quita olores y sabores. Así se recicla el agua en el espacio."
+        }
+      ]
+    }
+  }
+}

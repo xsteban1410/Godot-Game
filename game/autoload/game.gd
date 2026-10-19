@@ -175,15 +175,15 @@ func go_to(scene: String) -> void:
 	pop_lock(_fade)
 
 
-## Teclado y mando: stick izquierdo mover, derecho cámara, A saltar, X usar, Y (o F) Eevee, B/START = ESC, RB o L3 correr.
+## Teclado y mando: stick izquierdo mover, derecho cámara, A saltar, X usar, Y (o F) Ivy, B/START = ESC, RB o L3 correr.
 func _register_inputs() -> void:
 	var keys := {
 		"move_forward": [KEY_W, KEY_UP], "move_back": [KEY_S, KEY_DOWN], "move_left": [KEY_A, KEY_LEFT],
 		"move_right": [KEY_D, KEY_RIGHT], "jump": [KEY_SPACE], "sprint": [KEY_SHIFT], "interact": [KEY_E], "pause": [KEY_ESCAPE],
-		"eevee": [KEY_F], "look_up": [], "look_down": [], "look_left": [], "look_right": [],
+		"ivy": [KEY_F], "look_up": [], "look_down": [], "look_left": [], "look_right": [],
 	}
 	var buttons := {"jump": [JOY_BUTTON_A], "sprint": [JOY_BUTTON_RIGHT_SHOULDER, JOY_BUTTON_LEFT_STICK],
-		"interact": [JOY_BUTTON_X], "pause": [JOY_BUTTON_B, JOY_BUTTON_START], "eevee": [JOY_BUTTON_Y]}
+		"interact": [JOY_BUTTON_X], "pause": [JOY_BUTTON_B, JOY_BUTTON_START], "ivy": [JOY_BUTTON_Y]}
 	var sticks := {
 		"move_forward": [JOY_AXIS_LEFT_Y, -1.0], "move_back": [JOY_AXIS_LEFT_Y, 1.0],
 		"move_left": [JOY_AXIS_LEFT_X, -1.0], "move_right": [JOY_AXIS_LEFT_X, 1.0],

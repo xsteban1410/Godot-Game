@@ -87,10 +87,10 @@ func _initialize() -> void:
 	var symbols: FontFile = load("res://ui/fonts/Symbols.ttf")
 	_check(Array("★☆←↑→Ω".split("")).all(func(c: String) -> bool: return symbols.has_char(c.unicode_at(0))), "Symbols.ttf tiene ★ ☆ ← ↑ → Ω")
 
-	# Eevee: lineas.json (lo edita el usuario, ver eevee/GUIA.md) bien escrito, completo y con cada frase grabada.
+	# Ivy: lineas.json (lo edita el usuario, ver ivy/GUIA.md) bien escrito, completo y con cada frase grabada.
 	var json := JSON.new()
-	var parsed := json.parse(FileAccess.get_file_as_string("res://eevee/lineas.json"))
-	_check(parsed == OK and json.data is Dictionary, "eevee/lineas.json es un JSON válido%s" % [
+	var parsed := json.parse(FileAccess.get_file_as_string("res://ivy/lineas.json"))
+	_check(parsed == OK and json.data is Dictionary, "ivy/lineas.json es un JSON válido%s" % [
 		"" if parsed == OK else " (línea %d: %s)" % [json.get_error_line(), json.get_error_message()]])
 	if parsed == OK and json.data is Dictionary:
 		var missing: Array[String] = []
@@ -106,10 +106,10 @@ func _initialize() -> void:
 			var questions: Variant = json.data.get("zonas", {}).get(id, {}).get("preguntas", [])
 			if not questions is Array or not questions.all(func(q: Variant) -> bool: return _text(q, ["pregunta"]) and _text(q, ["respuesta"])):
 				missing.append("zonas/%s/preguntas (cada una con «pregunta» y «respuesta»)" % id)
-		_check(missing.is_empty(), "eevee/lineas.json tiene todas sus partes%s" % ["" if missing.is_empty() else ": falta " + ", ".join(missing)])
-		var eevee: GDScript = load("res://eevee/eevee.gd")
-		var silent: Array = eevee.all_lines().filter(func(t: String) -> bool: return not FileAccess.file_exists(eevee.voice_path(t)))
-		_check(silent.is_empty(), "cada frase de Eevee tiene su voz grabada%s" % [
+		_check(missing.is_empty(), "ivy/lineas.json tiene todas sus partes%s" % ["" if missing.is_empty() else ": falta " + ", ".join(missing)])
+		var ivy: GDScript = load("res://ivy/ivy.gd")
+		var silent: Array = ivy.all_lines().filter(func(t: String) -> bool: return not FileAccess.file_exists(ivy.voice_path(t)))
+		_check(silent.is_empty(), "cada frase de Ivy tiene su voz grabada%s" % [
 			"" if silent.is_empty() else " (faltan %d: pasa tools/voice.gd; la primera: «%s»)" % [silent.size(), silent[0]]])
 
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(game.save_path))

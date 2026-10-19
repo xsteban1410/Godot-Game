@@ -13,8 +13,10 @@ Todos son de dominio público (CC0 1.0): se pueden usar sin pedir permiso.
 Rubik (Rubik Project Authors) y `Symbols.ttf`, un subconjunto de Inter Bold (Inter Project Authors) con los
 símbolos que Rubik no tiene (★ ☆ ← ↑ → Ω). Las dos con licencia SIL Open Font License 1.1 (`ui/fonts/OFL.txt`).
 
-## Voz de Eevee (`eevee/voz/`)
+## Voz de Ivy (`ivy/voz/`)
 
-Grabada con [Piper](https://github.com/OHF-Voice/piper1-gpl) y la voz `es_MX-claude-high`
-([rhasspy/piper-voices](https://huggingface.co/rhasspy/piper-voices), datos de HirCoir/Piper-TTS-Spanish,
-licencia Apache-2.0). Piper solo se usa para grabar (`tools/voice.gd`); el juego no lo incluye.
+Grabada con [Piper](https://github.com/OHF-Voice/piper1-gpl) y la voz `es_AR-daniela-high`
+([rhasspy/piper-voices](https://huggingface.co/rhasspy/piper-voices), entrenada por larcanio con el corpus de
+español argentino de [OpenSLR 61](https://www.openslr.org/61/)), con licencia CC BY-SA 4.0: los audios de
+`ivy/voz/` se comparten con esa misma licencia. Piper solo se usa para grabar (`tools/voice.gd`); el juego no lo
+incluye.
