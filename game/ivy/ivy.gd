@@ -163,6 +163,8 @@ func open() -> void:
 	_menu.add_child(UI.button(str(general.get("boton_despues", "¿Qué hago después?")), func() -> void: say(next_step())))
 	_menu.add_child(UI.button(str(general.get("boton_cerrar", "Cerrar")), _close))
 	Game.push_lock(self)
+	_arrive()
+	_bubble.visible = true  # aunque "ayuda" esté vacía o lineas.json roto: el panel siempre se ve
 	say(str(general.get("ayuda", "")))
 	UI.focus(_menu.get_child(0))
 

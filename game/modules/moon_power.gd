@@ -94,7 +94,7 @@ func _add_tile(cell: Vector2i, shape: String, turns: int) -> void:
 	var area := Kit.interactable(_grid, "GIRAR CABLE", p + Vector3(0, 0.6, 0), 0.75)
 	area.marker_height = 1.2
 	area.interacted.connect(_on_turn.bind(cell))
-	_tiles[cell] = {"shape": shape, "turns": turns, "pivot": pivot, "cable": pivot.get_child(0)}
+	_tiles[cell] = {"shape": shape, "turns": turns, "pivot": pivot, "cable": pivot.get_child(0), "tween": null}
 
 
 func _on_turn(cell: Vector2i) -> void:
@@ -108,7 +108,11 @@ func _on_turn(cell: Vector2i) -> void:
 func _turn(cell: Vector2i) -> void:
 	var tile: Dictionary = _tiles[cell]
 	tile.turns = (tile.turns + 1) % 4
-	create_tween().tween_property(tile.pivot, "rotation:y", tile.pivot.rotation.y - PI / 2, 0.15).set_trans(Tween.TRANS_BACK)
+	if tile.tween:
+		tile.tween.kill()  # un giro a medias acaba de golpe: lo que se ve sigue siempre a `turns`
+	tile.pivot.rotation.y = -(tile.turns - 1) * PI / 2
+	tile.tween = create_tween()
+	tile.tween.tween_property(tile.pivot, "rotation:y", -tile.turns * PI / 2, 0.15).set_trans(Tween.TRANS_BACK)
 
 
 func _sides(cell: Vector2i) -> Array:

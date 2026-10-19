@@ -88,10 +88,10 @@ func play(anim: String, blend := 0.15, speed := 1.0) -> void:
 	var clip: Array = CLIPS[anim]
 	if anim != current:
 		current = anim
-		_animations.play(clip[0], blend)
+		_animations.play(clip[0], blend, 0.0 if clip.size() > 3 else 1.0)  # congelada con custom_speed: speed_scale = 0 también paraba la mezcla
 		if clip.size() > 2:
 			_animations.seek(clip[2], true)
-	_animations.speed_scale = 0.0 if clip.size() > 3 else speed
+	_animations.speed_scale = speed
 
 
 ## Franja de combustible: llena (1) a vacía (0); en rojo si queda poco.

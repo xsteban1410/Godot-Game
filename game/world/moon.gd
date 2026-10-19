@@ -96,11 +96,16 @@ func _ready() -> void:
 	for i in BOLTS.size():
 		Bolt.spawn(self, "moon_%d" % i, BOLTS[i])
 	for i in STORY.size():
-		get_tree().create_timer(16.0 + i * 4.0).timeout.connect(Game.notify.bind(STORY[i], Game.GOLD))  # tras el saludo de Ivy
+		get_tree().create_timer(16.0 + i * 4.0).timeout.connect(_story.bind(i))  # tras el saludo de Ivy
 
 
 func _process(delta: float) -> void:
 	_earth.rotate_y(delta * 0.05)
+
+
+## Frase de la historia; es de la escena: si dejas la Luna antes, no sale en la Tierra.
+func _story(i: int) -> void:
+	Game.notify(STORY[i], Game.GOLD)
 
 
 ## Postes con luz del color del reto cada 4,5 m, de la llegada hasta `stop` metros antes del reto.

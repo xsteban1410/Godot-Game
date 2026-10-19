@@ -39,6 +39,7 @@ var save_path := "user://save.cfg"
 var arriving := false  # true mientras el cohete viaja: la escena de destino reproduce el aterrizaje
 var stars := {}  # id de módulo -> 0..3; solo sube, así repetir un reto nunca premia dos veces
 var bolts := {}  # id de tuerca -> true
+var ice := {}  # cristales del salto lunar ya recogidos: índice -> true
 var _locks := {}  # quién bloquea -> si necesita el cursor visible
 var _fade := ColorRect.new()
 
@@ -53,6 +54,7 @@ func _ready() -> void:
 	if cfg.load(save_path) == OK:
 		stars = cfg.get_value("progress", "stars", {})
 		bolts = cfg.get_value("progress", "bolts", {})
+		ice = cfg.get_value("progress", "ice", {})
 	var layer := CanvasLayer.new()
 	layer.layer = 100
 	add_child(layer)
@@ -80,6 +82,13 @@ func collect_bolt(id: String) -> void:
 	bolts_changed.emit(bolts.size())
 
 
+## Cristal de hielo `index` del salto lunar: cada uno distinto es una ★ de "moon_jump".
+func collect_ice(index: int) -> void:
+	ice[index] = true
+	_save()
+	set_stars("moon_jump", ice.size())
+
+
 ## Con todas las tuercas, el traje del robot es dorado.
 func golden() -> bool:
 	return bolts.size() >= BOLTS_TOTAL
@@ -89,6 +98,7 @@ func _save() -> void:
 	var cfg := ConfigFile.new()
 	cfg.set_value("progress", "stars", stars)
 	cfg.set_value("progress", "bolts", bolts)
+	cfg.set_value("progress", "ice", ice)
 	if cfg.save(save_path) != OK:
 		push_error("No se pudo guardar el progreso en " + save_path)
 

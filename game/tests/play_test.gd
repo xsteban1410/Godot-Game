@@ -14,6 +14,7 @@ func _initialize() -> void:
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(_game.save_path))
 	_game.stars = {}
 	_game.bolts = {}
+	_game.ice = {}
 	change_scene_to_file("res://world/city.tscn")
 	_run.call_deferred()
 
@@ -407,9 +408,9 @@ func _run() -> void:
 	_check(top - moon_floor > 4.0, "en la Luna se salta %.1f m (en la Tierra, 1,5)" % (top - moon_floor))
 	var jump: Node3D = _find("_collect")
 	_check(jump.STEPS > 1 and 2.4 < top - moon_floor, "cada escalón del salto lunar (2,4 m) se alcanza saltando")
-	astronaut.global_position = jump._crystals[0].global_position
+	astronaut.global_position = jump._crystals[1].global_position  # fuera de orden: se guarda cuál, no cuántos
 	await _frames(10)
-	_check(_game.stars.get("moon_jump", 0) == 1, "tocar un cristal de hielo da una estrella lunar")
+	_check(_game.stars.get("moon_jump", 0) == 1 and _game.ice.keys() == [1], "tocar un cristal de hielo da una estrella lunar y se guarda cuál")
 
 	var rover: Node3D = _find("_solve")
 	for level in 3:

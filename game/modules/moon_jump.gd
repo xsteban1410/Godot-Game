@@ -30,7 +30,7 @@ func _ready() -> void:
 
 
 func _crystal(index: int, pos: Vector3) -> void:
-	if int(Game.stars.get("moon_jump", 0)) > index:
+	if Game.ice.has(index):
 		return  # ya recogido en otra visita
 	var area := Area3D.new()
 	area.position = pos
@@ -45,17 +45,16 @@ func _crystal(index: int, pos: Vector3) -> void:
 	add_child(area)
 	var spin := area.create_tween().set_loops()
 	spin.tween_property(area, "rotation:y", TAU, 3.0).from(0.0)
-	area.body_entered.connect(_collect.bind(area))
+	area.body_entered.connect(_collect.bind(area, index))
 	_crystals.append(area)
 
 
-func _collect(body: Node3D, area: Area3D) -> void:
+func _collect(body: Node3D, area: Area3D, index: int) -> void:
 	if not body.is_in_group("player") or not is_instance_valid(area):
 		return
 	Sfx.play("pickup")
 	Fx.burst(self, area.position, [Color("bfe6ff"), Color.WHITE, Color("2ec4ff")], 40, 6.0, 0.12)
 	area.queue_free()
 	_crystals.erase(area)
-	var found := int(Game.stars.get("moon_jump", 0)) + 1
-	Game.notify("¡Hielo! %d / 3. En los cráteres donde nunca da el Sol, el agua sigue congelada." % found, Color("bfe6ff"))
-	Game.set_stars("moon_jump", found)
+	Game.collect_ice(index)
+	Game.notify("¡Hielo! %d / 3. En los cráteres donde nunca da el Sol, el agua sigue congelada." % Game.ice.size(), Color("bfe6ff"))
