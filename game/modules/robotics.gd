@@ -83,7 +83,8 @@ func close() -> void:
 		_previous_camera.make_current()
 
 
-func _unhandled_input(event: InputEvent) -> void:
+## En _input, antes que la interfaz: si no, tras un clic el botón con foco se quedaba las flechas e INTRO.
+func _input(event: InputEvent) -> void:
 	if not _layer.visible:
 		return
 	if (event is InputEventJoypadButton or event is InputEventJoypadMotion) and not get_viewport().gui_get_focus_owner():

@@ -160,8 +160,7 @@ func _physics_process(delta: float) -> void:
 	elif not is_on_floor():
 		# En el aire, volver a pulsar ESPACIO enciende el jetpack mientras se mantenga y quede combustible.
 		_jetting = (_jetting or pressed) and _fuel > 0.0 and not locked and Input.is_action_pressed("jump")
-		if _jetting:
-			_jump_buffer = 0.0
+		if _jetting:  # (el búfer sigue: pulsar justo antes de aterrizar salta al tocar el suelo)
 			_fuel -= delta
 			velocity.y = move_toward(velocity.y, JET_LIFT, maxf(gravity, 12.0) * 2.5 * delta)
 			_jet_sound -= delta

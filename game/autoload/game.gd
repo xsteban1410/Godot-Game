@@ -24,7 +24,7 @@ const MODULES := {
 	"solar": {"name": "Energía solar", "color": Color("ffb020"), "desc": "Responde y enciende la casa solar"},
 	"bridge": {"name": "Ingeniería", "color": Color("ff5a36"), "desc": "Diseña un puente que resista"},
 	"robotics": {"name": "Robótica", "color": Color("1fa8ff"), "desc": "Programa al robot hasta la meta"},
-	"recycling": {"name": "Reciclaje", "color": Color("3fcf5a"), "desc": "Clasifica los residuos a tiempo"},
+	"recycling": {"name": "Reciclaje", "color": Color("3fcf5a"), "desc": "Clasifica cada residuo en su caneca"},
 }
 const LAB_MODULES := {  # retos extra del STEAM LAB: no son piezas del cohete
 	"math": {"name": "Matemáticas", "color": Color("9b6bff"), "desc": "Vuela con el jetpack a la respuesta"},
@@ -33,6 +33,7 @@ const LAB_MODULES := {  # retos extra del STEAM LAB: no son piezas del cohete
 }
 
 const BOLTS_TOTAL := 32  # tuercas doradas: 22 en la ciudad y 10 en la Luna (play_test lo comprueba)
+const SYMBOLS := preload("res://ui/fonts/Symbols.ttf")  # ★ ☆ ← ↑ → Ω, que Rubik no tiene
 
 var save_path := "user://save.cfg"
 var arriving := false  # true mientras el cohete viaja: la escena de destino reproduce el aterrizaje
@@ -45,6 +46,9 @@ var _fade := ColorRect.new()
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_register_inputs()
+	# Sin esto, los símbolos dependían de las fuentes del sistema (bajo Wine, «●» salía como un cuadro).
+	for font: FontFile in [preload("res://ui/fonts/Rubik-Medium.ttf"), preload("res://ui/fonts/Rubik-ExtraBold.ttf")]:
+		font.fallbacks = [SYMBOLS]
 	var cfg := ConfigFile.new()
 	if cfg.load(save_path) == OK:
 		stars = cfg.get_value("progress", "stars", {})
@@ -141,7 +145,7 @@ func _notification(what: int) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("pause"):  # ESC libera el ratón; un clic lo recupera
+	if event is InputEventKey and event.is_action_pressed("pause"):  # ESC libera el ratón (B del mando no); un clic lo recupera
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	elif event is InputEventMouseButton and event.pressed and not is_locked():
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED

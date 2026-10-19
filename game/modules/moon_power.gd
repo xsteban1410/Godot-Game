@@ -48,7 +48,7 @@ func _new_grid() -> void:
 				var exit := 1 if i == path.size() - 1 else DIRS.find(path[i + 1] - cell)
 				shape = "I" if (entry + 2) % 4 == exit else "L"
 			_add_tile(cell, shape, randi() % 4)
-	if _lit().has(_end):  # nunca empezar ya resuelto
+	while _lit().has(_end):  # nunca empezar ya resuelto (una L puede necesitar dos giros)
 		_turn(path[0])
 	# Fuente (paneles solares) a la izquierda y fundidor a la derecha.
 	var source := _pos(_start) + Vector3(-TILE * 1.3, 0, 0)

@@ -5,6 +5,7 @@ var _missions: VBoxContainer
 var _objective: Label
 var _prompt: PanelContainer
 var _prompt_label: Label
+var _key: Label  # tecla del aviso: E con teclado, X con mando
 var _toasts: VBoxContainer
 var _celebration := CanvasLayer.new()
 @export var moon := false  # en la Luna se listan los retos lunares
@@ -53,7 +54,8 @@ func _ready() -> void:
 	_prompt.add_child(row)
 	var key := PanelContainer.new()
 	key.theme_type_variation = &"KeyCap"
-	key.add_child(UI.label("E", "Title", Game.NAVY))
+	_key = UI.label("E", "Title", Game.NAVY)
+	key.add_child(_key)
 	row.add_child(key)
 	_prompt_label = UI.label("")
 	row.add_child(_prompt_label)
@@ -68,6 +70,14 @@ func _ready() -> void:
 	Game.prompt_changed.connect(_on_prompt_changed)
 	_refresh_missions()
 	UI.ignore_mouse(margin)
+
+
+## El aviso muestra la tecla del último control usado (el movimiento del ratón no cuenta: haría parpadear).
+func _input(event: InputEvent) -> void:
+	if event is InputEventJoypadButton or event is InputEventJoypadMotion and absf(event.axis_value) > 0.5:
+		_key.text = "X"
+	elif event is InputEventKey or event is InputEventMouseButton:
+		_key.text = "E"
 
 
 func _on_prompt_changed(text: String) -> void:

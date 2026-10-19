@@ -51,6 +51,22 @@ func _run() -> void:
 	await _frames(60)
 	_check(player.is_on_floor(), "el jugador aterriza")
 
+	# Búfer de salto: ESPACIO justo antes de aterrizar (en el aire enciende el jetpack un instante) salta al tocar el suelo.
+	player.place(player.global_position + Vector3(0, 0.6, 0), 0.0)
+	for i in 30:
+		await physics_frame
+		if player.global_position.y - ground_y < 0.25:
+			break
+	Input.action_press("jump")
+	await _frames(3)  # mantenida unos fotogramas: así el jetpack llega a encenderse (y antes borraba el búfer)
+	Input.action_release("jump")
+	peak = ground_y
+	for i in 40:
+		await physics_frame
+		peak = maxf(peak, player.global_position.y)
+	_check(peak - ground_y > 0.6, "pulsar saltar justo antes de aterrizar salta al tocar el suelo (%.2f m)" % (peak - ground_y))
+	await _frames(60)
+
 	var prompts: Array[String] = []
 	_game.prompt_changed.connect(func(t: String) -> void: prompts.append(t))
 	player.place(Vector3(0, 0.5, 5), 0.0)
@@ -80,6 +96,17 @@ func _run() -> void:
 	_check(start.z - player.global_position.z > 1.5, "el stick izquierdo del mando mueve al jugador (%.2f m)" % (start.z - player.global_position.z))
 	var hud: CanvasLayer = current_scene.get_node("HUD")
 	_check("Gana estrellas" in hud.objective(false), "sin piezas, el objetivo es ganar estrellas")
+	var button := InputEventJoypadButton.new()
+	button.button_index = JOY_BUTTON_BACK  # un botón sin acción: solo cambia el aviso
+	button.pressed = true
+	Input.parse_input_event(button)
+	button.pressed = false
+	Input.parse_input_event(button)
+	await _frames(1)
+	var pad_key: String = hud._key.text
+	_press_key(KEY_F12)
+	await _frames(1)
+	_check(pad_key == "X" and hud._key.text == "E", "el aviso muestra X tras usar el mando y E tras usar el teclado")
 	_check(current_scene._robots.size() == 5, "Volt y cuatro robots ciudadanos pasean por la ciudad")
 	var bolts: Array = current_scene.find_children("*", "", true, false).filter(_is_bolt)
 	_check(bolts.size() == 22, "la ciudad tiene 22 tuercas doradas (%d)" % bolts.size())
@@ -181,10 +208,13 @@ func _run() -> void:
 	robotics._new_board()
 	robotics.open()
 	_check(get_root().get_viewport().get_camera_3d() == robotics._camera, "abrir Robótica pasa a la cámara cenital")
+	var focused := _button(robotics, "DERECHA")
+	focused.grab_focus()  # como tras un clic: antes, ← movía el foco a IZQUIERDA en vez de programar
 	_press_key(KEY_LEFT)
 	_press_key(KEY_UP)
 	await _frames(2)
-	_check(robotics._program == ["L", "F"], "las flechas del teclado programan el robot")
+	_check(robotics._program == ["L", "F"], "las flechas del teclado programan el robot aunque un botón tenga el foco")
+	focused.release_focus()
 	await robotics._run()
 	_check(robotics._cell == Vector2i.ZERO and not robotics._running, "salir del tablero es un choque y el robot vuelve")
 	robotics._program.assign(robotics._solve())
@@ -367,6 +397,11 @@ func _run() -> void:
 
 	var power: Node3D = _find("_lit")
 	_check(not power._lit().has(power._end), "el circuito empieza sin resolver")
+	var fresh := true
+	for i in 100:  # una L en la primera casilla podía dejarlo resuelto tras un giro y regalar la estrella
+		power._new_grid()
+		fresh = fresh and not power._lit().has(power._end)
+	_check(fresh and _game.stars.get("moon_power", 0) == 0, "100 circuitos nuevos seguidos: ninguno empieza resuelto")
 	for i in power._path.size():  # girar cada pieza del camino hasta que una su entrada y su salida
 		var cell: Vector2i = power._path[i]
 		var entry: int = 3 if i == 0 else power.DIRS.find(power._path[i - 1] - cell)
