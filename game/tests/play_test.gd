@@ -389,7 +389,7 @@ func _run() -> void:
 	var guide: Node3D = _find("next_step")
 	_check(guide.home == "moon" and guide._text.text == guide._zone("moon").saludo, "al aterrizar en la Luna, Ivy la presenta")
 
-	_check(_find("_moon_done")._pad.prompt.ends_with("(0 / 4 retos)"), "sin los retos lunares el cohete no puede volver")
+	_check(_find("_set_water")._pad.prompt.ends_with("(0 / 4 retos)"), "sin los retos lunares el cohete no puede volver")
 	_check("(0 / 4)" in current_scene.get_node("HUD").objective(true), "en la Luna, el objetivo son los 4 retos lunares")
 	var moon_bolts: Array = current_scene.find_children("*", "", true, false).filter(_is_bolt)
 	_check(moon_bolts.size() + 22 == _game.BOLTS_TOTAL, "la Luna tiene las 10 tuercas que faltan (%d)" % moon_bolts.size())
@@ -462,7 +462,7 @@ func _run() -> void:
 	_check(_game.stars.get("moon_water", 0) == 3, "repetir sin fallos sube a 3 estrellas")
 
 	# --- Fase 12: regreso ---
-	var moon_rocket: Node3D = _find("_moon_done")
+	var moon_rocket: Node3D = _find("_set_water")
 	_check(moon_rocket._pad.prompt == "VOLVER A LA TIERRA", "con los 4 retos lunares el cohete puede volver")
 	moon_rocket._pad.interact()
 	await _frames(700)

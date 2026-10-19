@@ -77,9 +77,9 @@ func _ready() -> void:
 		add_child(challenge)
 		_beacons(pos, Game.info(id).color, 18.0 if id == "moon_jump" else 11.0)
 		if id != "moon_jump":  # plataforma con el aro del color del reto, como los distritos de la Tierra
-			Kit.cylinder(challenge, 9.0, 9.4, 0.1, Vector3(0, 0.05, -3.0), Kit.mat(Color("d9dde3"), 0.0, 0.2, 0.5), 64)
-			Kit.torus(challenge, 8.6, 9.1, Vector3(0, 0.1, -3.0), Kit.mat(Game.info(id).color, 1.2))
-			Kit.bake(challenge)
+			# Hijas de la Luna (las funde el Kit.bake de abajo), no del reto: el reto ya fundió lo suyo con su `keep`.
+			Kit.cylinder(self, 9.0, 9.4, 0.1, challenge.transform * Vector3(0, 0.05, -3.0), Kit.mat(Color("d9dde3"), 0.0, 0.2, 0.5), 64)
+			Kit.torus(self, 8.6, 9.1, challenge.transform * Vector3(0, 0.1, -3.0), Kit.mat(Game.info(id).color, 1.2))
 	var chief := VOLT.new()
 	chief.accent = Color("9b6bff")
 	chief.position = Vector3(-5, 0, -16)

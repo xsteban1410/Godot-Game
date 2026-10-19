@@ -89,6 +89,19 @@ func collect_ice(index: int) -> void:
 	set_stars("moon_jump", ice.size())
 
 
+## Retos lunares con al menos 1 ★ (hielo encontrado, extraído, derretido y filtrado): con los 4 se vuelve a la Tierra.
+func moon_done() -> int:
+	return MOON_MODULES.keys().filter(func(id: String) -> bool: return int(stars.get(id, 0)) > 0).size()
+
+
+## El siguiente paso de la historia (piezas del cohete → la Luna → volver → completarlo todo), como clave de
+## lineas.json → "historia": "estrellas", "lanzar", "hielo", "volver" o "todo". Lo usan el panel SIGUIENTE e Ivy.
+func story_step(on_moon: bool) -> String:
+	if on_moon:
+		return "volver" if moon_done() == 4 else "hielo"
+	return "estrellas" if total_stars() < 12 else "lanzar" if moon_done() < 4 else "todo"
+
+
 ## Con todas las tuercas, el traje del robot es dorado.
 func golden() -> bool:
 	return bolts.size() >= BOLTS_TOTAL

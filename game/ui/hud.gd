@@ -100,15 +100,15 @@ func _refresh_missions() -> void:
 
 ## El siguiente paso de la historia: piezas del cohete → la Luna → volver → completarlo todo.
 static func objective(on_moon: bool) -> String:
-	var moon_done := Game.MOON_MODULES.keys().filter(func(id: String) -> bool: return int(Game.stars.get(id, 0)) > 0).size()
-	if on_moon:
-		if moon_done < 4:
-			return "Busca hielo para el cohete: gana una ★ en cada reto lunar (%d / 4). Sigue las balizas de colores." % moon_done
-		return "¡Ya tienes agua! Vuelve al cohete para regresar a la Tierra."
-	if Game.total_stars() < 12:
-		return "Gana estrellas en los retos: cada una es una pieza del cohete (%d / 12)." % Game.total_stars()
-	if moon_done < 4:
-		return "¡Cohete completo! Ve a la plataforma de lanzamiento (el haz de luz) y viaja a la Luna."
+	match Game.story_step(on_moon):
+		"hielo":
+			return "Busca hielo para el cohete: gana una ★ en cada reto lunar (%d / 4). Sigue las balizas de colores." % Game.moon_done()
+		"volver":
+			return "¡Ya tienes agua! Vuelve al cohete para regresar a la Tierra."
+		"estrellas":
+			return "Gana estrellas en los retos: cada una es una pieza del cohete (%d / 12)." % Game.total_stars()
+		"lanzar":
+			return "¡Cohete completo! Ve a la plataforma de lanzamiento (el haz de luz) y viaja a la Luna."
 	return "Consigue todas las estrellas y las tuercas doradas (%d / %d) para el traje dorado." % [Game.bolts.size(), Game.BOLTS_TOTAL]
 
 

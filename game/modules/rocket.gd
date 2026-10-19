@@ -113,15 +113,10 @@ func _count() -> int:
 	return _parts.values().filter(func(p: Node3D) -> bool: return p.visible).size()
 
 
-## En la Luna: retos lunares con al menos 1 ★ (hielo encontrado, extraído, derretido y filtrado).
-func _moon_done() -> int:
-	return Game.MOON_MODULES.keys().filter(func(id: String) -> bool: return int(Game.stars.get(id, 0)) > 0).size()
-
-
 func _refresh() -> void:
-	_ready_to_fly = _moon_done() == 4 if moon else _count() == 12
+	_ready_to_fly = Game.moon_done() == 4 if moon else _count() == 12
 	if moon:
-		var done := _moon_done()
+		var done := Game.moon_done()
 		_pad.prompt = "VOLVER A LA TIERRA" if done == 4 else "COHETE DE AGUA · sin agua no puedes volver (%d / 4 retos)" % done
 		return
 	var missing := 12 - _count()
@@ -136,7 +131,7 @@ func _set_water(level: float) -> void:
 
 func _on_pad() -> void:
 	if moon:
-		if _moon_done() < 4:
+		if Game.moon_done() < 4:
 			Game.notify("Necesitas agua para volver: completa los 4 retos lunares.", Game.GOLD)
 		elif _stage == "":
 			_set_water(0.33)  # el agua purificada, en su punto ideal

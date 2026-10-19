@@ -2,7 +2,7 @@
 extends EditorPlugin
 ## LightmapGI solo se hornea con el botón «Bake Lightmaps» del editor: este plugin abre la escena pedida,
 ## selecciona su LightmapGI, pulsa ese botón, espera a que termine, guarda y cierra el editor.
-## Uso: godot -e --path game -- --bake=res://world/city_static.tscn
+## Uso: godot -e --path game -- --bake=res://world/city_static.scn
 
 
 func _enter_tree() -> void:

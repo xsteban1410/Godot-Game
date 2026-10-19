@@ -177,11 +177,7 @@ func _close() -> void:
 
 ## «¿Qué hago después?»: el siguiente paso de la historia (lineas.json → "historia"), como el panel SIGUIENTE.
 func next_step() -> String:
-	var moon_done := Game.MOON_MODULES.keys().filter(func(m: String) -> bool: return int(Game.stars.get(m, 0)) > 0).size()
-	var step := "volver" if moon_done == 4 else "hielo"
-	if home != "moon":
-		step = "estrellas" if Game.total_stars() < 12 else "lanzar" if moon_done < 4 else "todo"
-	return str(data().get("historia", {}).get(step, ""))
+	return str(data().get("historia", {}).get(Game.story_step(home == "moon"), ""))
 
 
 ## Baja del cielo junto al jugador.
