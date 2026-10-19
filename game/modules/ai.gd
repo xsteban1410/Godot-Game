@@ -17,8 +17,7 @@ var _playing := false
 var _busy := false
 var _pieces: Array[Node3D] = []
 var _nova := Node3D.new()
-var _limbs: Array[Node3D]
-var _walk := 0.0  # > 0 mientras NOVA camina
+var _robot: RobotModel
 var _sign: Label3D
 var _thought: Label3D
 
@@ -39,25 +38,16 @@ func _ready() -> void:
 	Kit.box(self, Vector3(8.5, 0.25, 0.4), Vector3(0, 7.8, -9.2), Kit.mat(color))
 	for x in [-3.7, 3.7]:
 		Kit.cylinder(self, 0.12, 0.12, 5.2, Vector3(x, 2.6, -9.3), Kit.mat(Color("f4f7fb")), 10)
-	_sign = Kit.label(self, "", Vector3(0, 6.4, -9.0), 54, Color.WHITE, false, 0.01)
+	_sign = Kit.label(self, "", Vector3(0, 6.4, -9.0), 46, Color.WHITE, false, 0.01, 7.8)
 	Kit.bake(self)
 	_nova.position = NOVA_HOME
 	_nova.rotation.y = -PI / 2  # mira al tablero
 	add_child(_nova)
-	_limbs = Kit.robot(_nova, color, Color("ff4f8b"))
+	_robot = RobotModel.create(_nova, color, Color("ff4f8b"))
 	Kit.blob_shadow(_nova)
 	Kit.label(_nova, "NOVA", Vector3(0, 2.4, 0), 44, color.lightened(0.4))
 	_thought = Kit.label(_nova, "", Vector3(0, 3.0, 0), 40, Color.WHITE)
 	_say("NOVA, la IA del tres en raya\nNivel %d: %s" % [_level + 1, LEVELS[_level]])
-
-
-func _process(delta: float) -> void:
-	if _walk <= 0.0:
-		return
-	_walk -= delta
-	var swing := sin(_walk * 14.0) * 0.5 if _walk > 0.0 else 0.0
-	for i in _limbs.size():
-		_limbs[i].rotation.x = swing * (1.0 if i % 3 == 0 else -1.0)
 
 
 func start() -> void:
@@ -94,16 +84,17 @@ func _nova_turn() -> void:
 	var move := choose(_board, _level)
 	_thought.text = ""
 	var spot := _pos(move) + Vector3(0, 0, 1.0)
-	_walk = 1.0
+	_robot.play("Walk", 0.15, 1.4)
 	_nova.look_at(to_global(spot), Vector3.UP, true)
 	await create_tween().tween_property(_nova, "position", spot, 0.9).set_trans(Tween.TRANS_SINE).finished
-	_limbs[1].rotation.x = -1.6  # señala la casilla
+	_robot.play("Point", 0.1)  # señala la casilla
 	_place(move, 2)
-	await get_tree().create_timer(0.3).timeout
-	_walk = 0.9
+	await get_tree().create_timer(0.4).timeout
+	_robot.play("Walk", 0.15, 1.4)
 	_nova.look_at(to_global(NOVA_HOME), Vector3.UP, true)
 	await create_tween().tween_property(_nova, "position", NOVA_HOME, 0.8).finished
 	_nova.rotation.y = -PI / 2
+	_robot.play("Idle", 0.25)
 	if not await _check_end():
 		_say("NIVEL %d · %s\nTu turno: E en una casilla" % [_level + 1, LEVELS[_level]])
 
@@ -221,10 +212,9 @@ func _highlight(who: int) -> void:
 
 
 func _nova_cheer() -> void:
-	var dance := create_tween()
-	for k in 3:
-		dance.tween_property(_nova, "position:y", 0.5, 0.15).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-		dance.tween_property(_nova, "position:y", 0.0, 0.2).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	_robot.play("Cheer", 0.1)
+	await get_tree().create_timer(1.6).timeout
+	_robot.play("Idle", 0.3)
 
 
 func _say(text: String) -> void:

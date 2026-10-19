@@ -2,6 +2,7 @@ extends CanvasLayer
 ## HUD: estrellas por reto, aviso de interacción, notificaciones y celebración al ganar estrellas.
 
 var _missions: VBoxContainer
+var _objective: Label
 var _prompt: PanelContainer
 var _prompt_label: Label
 var _toasts: VBoxContainer
@@ -19,11 +20,25 @@ func _ready() -> void:
 	var column := VBoxContainer.new()
 	margin.add_child(column)
 
+	var top := HBoxContainer.new()
+	top.alignment = BoxContainer.ALIGNMENT_END
+	top.add_theme_constant_override("separation", 20)
+	column.add_child(top)
+	var objective_panel := PanelContainer.new()  # «SIGUIENTE»: qué toca hacer en la historia
+	objective_panel.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	objective_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL | Control.SIZE_SHRINK_BEGIN
+	var objective_column := VBoxContainer.new()
+	objective_panel.add_child(objective_column)
+	objective_column.add_child(UI.label("SIGUIENTE", "Caption", Game.GOLD))
+	_objective = UI.label("")
+	_objective.custom_minimum_size.x = 420
+	_objective.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	objective_column.add_child(_objective)
+	top.add_child(objective_panel)
 	var missions_panel := PanelContainer.new()
-	missions_panel.size_flags_horizontal = Control.SIZE_SHRINK_END
 	_missions = VBoxContainer.new()
 	missions_panel.add_child(_missions)
-	column.add_child(missions_panel)
+	top.add_child(missions_panel)
 
 	_toasts = VBoxContainer.new()
 	_toasts.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -43,11 +58,12 @@ func _ready() -> void:
 	_prompt_label = UI.label("")
 	row.add_child(_prompt_label)
 	column.add_child(_prompt)
-	column.add_child(UI.label("WASD mover  ·  RATÓN cámara  ·  SHIFT correr  ·  ESPACIO saltar (otra vez en el aire: JETPACK)  ·  E interactuar  ·  RUEDA zoom", "Caption"))
+	column.add_child(UI.label("WASD mover  ·  RATÓN cámara  ·  SHIFT correr  ·  ESPACIO saltar (otra vez en el aire: JETPACK)  ·  E interactuar  ·  RUEDA zoom  ·  MANDO: A saltar, X usar", "Caption"))
 
 	_celebration.layer = 50  # por encima de los paneles de los retos
 	add_child(_celebration)
 	Game.stars_changed.connect(_on_stars_changed)
+	Game.bolts_changed.connect(_on_bolts_changed)
 	Game.toast.connect(_show_toast)
 	Game.prompt_changed.connect(_on_prompt_changed)
 	_refresh_missions()
@@ -67,7 +83,29 @@ func _refresh_missions() -> void:
 		_mission_list("MISIONES", Game.MODULES)
 		_missions.add_child(UI.label("COHETE  ·  %d / 12 piezas" % Game.total_stars(), "Caption", Game.GOLD))
 		_mission_list("LABORATORIO", Game.LAB_MODULES)
+	_missions.add_child(UI.label("TUERCAS DORADAS  ·  %d / %d" % [Game.bolts.size(), Game.BOLTS_TOTAL], "Caption", Game.GOLD))
 	UI.ignore_mouse(_missions)
+	_objective.text = objective(moon)
+
+
+## El siguiente paso de la historia: piezas del cohete → la Luna → volver → completarlo todo.
+static func objective(on_moon: bool) -> String:
+	var moon_done := Game.MOON_MODULES.keys().filter(func(id: String) -> bool: return int(Game.stars.get(id, 0)) > 0).size()
+	if on_moon:
+		if moon_done < 4:
+			return "Busca hielo para el cohete: gana una ★ en cada reto lunar (%d / 4). Sigue las balizas de colores." % moon_done
+		return "¡Ya tienes agua! Vuelve al cohete para regresar a la Tierra."
+	if Game.total_stars() < 12:
+		return "Gana estrellas en los retos: cada una es una pieza del cohete (%d / 12)." % Game.total_stars()
+	if moon_done < 4:
+		return "¡Cohete completo! Ve a la plataforma de lanzamiento (el haz de luz) y viaja a la Luna."
+	return "Consigue todas las estrellas y las tuercas doradas (%d / %d) para el traje dorado." % [Game.bolts.size(), Game.BOLTS_TOTAL]
+
+
+func _on_bolts_changed(_count: int) -> void:
+	_refresh_missions()
+	if Game.golden():
+		_shout("¡TRAJE DORADO!", Game.GOLD, "Encontraste las %d tuercas" % Game.BOLTS_TOTAL)
 
 
 func _mission_list(title: String, modules: Dictionary) -> void:
@@ -95,25 +133,40 @@ func _show_toast(text: String, color: Color) -> void:
 	tween.tween_callback(panel.queue_free)
 
 
-## Celebración: nombre del reto y estrellas que aparecen una a una con rebote.
-func _on_stars_changed(module: String, stars: int) -> void:
-	_refresh_missions()
+## Rótulo grande en el centro que aparece con rebote y se desvanece; devuelve su columna para añadir más.
+func _shout(text: String, color: Color, subtitle := "") -> VBoxContainer:
 	var center := CenterContainer.new()
 	center.theme = UI.THEME
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_celebration.add_child(center)
 	var column := VBoxContainer.new()
 	center.add_child(column)
-	var title := UI.label("¡%s!" % String(Game.info(module).name).to_upper(), "Title", Game.info(module).color)
+	var title := UI.label(text, "Title", color)
 	title.add_theme_font_size_override("font_size", 64)
 	title.add_theme_constant_override("outline_size", 16)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(title)
+	if subtitle:
+		var sub := UI.label(subtitle, "Title", Game.TEXT)
+		sub.add_theme_constant_override("outline_size", 12)
+		sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		column.add_child(sub)
+	UI.ignore_mouse(center)
+	UI.pop(title)
+	var out := center.create_tween()
+	out.tween_interval(2.8)
+	out.tween_property(center, "modulate:a", 0.0, 0.5)
+	out.tween_callback(center.queue_free)
+	return column
+
+
+## Celebración: nombre del reto y estrellas que aparecen una a una con rebote.
+func _on_stars_changed(module: String, stars: int) -> void:
+	_refresh_missions()
+	var column := _shout("¡%s!" % String(Game.info(module).name).to_upper(), Game.info(module).color)
 	var row := HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	column.add_child(row)
-	UI.ignore_mouse(center)
-	UI.pop(title)
 	for i in 3:
 		var star := UI.label("★" if i < stars else "☆", "Title", Game.GOLD)
 		star.add_theme_font_size_override("font_size", 150)
@@ -126,10 +179,6 @@ func _on_stars_changed(module: String, stars: int) -> void:
 			UI.pop(star)
 			if i < stars:
 				Sfx.play("pickup", 0.0))
-	var out := center.create_tween()
-	out.tween_interval(2.8)
-	out.tween_property(center, "modulate:a", 0.0, 0.5)
-	out.tween_callback(center.queue_free)
 	if Game.MODULES.has(module) and Game.total_stars() == Game.MODULES.size() * 3:
 		get_tree().create_timer(3.4).timeout.connect(show_certificate)
 

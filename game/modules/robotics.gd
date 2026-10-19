@@ -28,12 +28,14 @@ var _heading := 0
 var _running := false
 var _board := Node3D.new()
 var _robot := Node3D.new()
+var _model: RobotModel  # el mini robot (en el reto del rover, null: el rover no tiene animaciones)
 var _camera := Camera3D.new()
 var _previous_camera: Camera3D
 var _layer := CanvasLayer.new()
 var _chips: HFlowContainer
 var _status: Label
 var _title: Label
+var _first_button: Button
 
 
 func _ready() -> void:
@@ -52,7 +54,7 @@ func _ready() -> void:
 	if rover:
 		_build_rover(body)
 	else:
-		Kit.robot(body, Game.MODULES.robotics.color)
+		_model = RobotModel.create(body, Game.MODULES.robotics.color)
 		Kit.blob_shadow(_robot)
 	add_child(_camera)
 	_camera.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF  # se coloca fuera del paso de física
@@ -73,6 +75,7 @@ func open() -> void:
 
 func close() -> void:
 	if _running:  # el botón SALIR también: si no, el programa seguía corriendo fuera de cámara
+		_say("Espera a que el %s termine el programa." % ("rover" if rover else "robot"))
 		return
 	_layer.visible = false
 	Game.pop_lock(self)
@@ -81,7 +84,15 @@ func close() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not _layer.visible or not event is InputEventKey or not event.pressed or event.echo:
+	if not _layer.visible:
+		return
+	if (event is InputEventJoypadButton or event is InputEventJoypadMotion) and not get_viewport().gui_get_focus_owner():
+		UI.focus(_first_button)  # con mando, la cruceta recorre los botones (con teclado no: las flechas son órdenes)
+	if event.is_action_pressed("pause"):  # ESC, o B / START en el mando
+		close()
+		get_viewport().set_input_as_handled()
+		return
+	if not event is InputEventKey or not event.pressed or event.echo:
 		return
 	match event.keycode:
 		KEY_UP: _add("F")
@@ -89,7 +100,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		KEY_RIGHT: _add("R")
 		KEY_BACKSPACE: _remove()
 		KEY_ENTER, KEY_KP_ENTER: _run()
-		KEY_ESCAPE: close()
 		_: return
 	get_viewport().set_input_as_handled()
 
@@ -139,6 +149,7 @@ func _run() -> void:
 
 func _hop(to: Vector3) -> void:
 	Sfx.play("hop", 0.1)
+	_animate("Jump")
 	var tween := create_tween().set_parallel()
 	tween.tween_property(_robot, "position:x", to.x, 0.3)
 	tween.tween_property(_robot, "position:z", to.z, 0.3)
@@ -147,6 +158,7 @@ func _hop(to: Vector3) -> void:
 	tween.chain().tween_property(_robot, "scale", Vector3(1.2, 0.8, 1.2), 0.05)
 	tween.chain().tween_property(_robot, "scale", Vector3.ONE, 0.2).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 	await tween.finished
+	_animate("Idle")
 
 
 ## Choque: embiste el obstáculo o el borde, rebota entre chispas y tiembla.
@@ -171,6 +183,7 @@ func _crash(target: Vector2i) -> void:
 
 
 func _win() -> void:
+	_animate("Cheer")
 	Sfx.play("success")
 	Fx.confetti(self, _pos(_goal) + Vector3(0, 0.5, 0))
 	var tween := create_tween().set_parallel()
@@ -215,7 +228,7 @@ func _new_board() -> void:
 			var color := Color("ffcc00") if cell == _goal else Color("1fa8ff") if cell == Vector2i.ZERO else light if (x + y) % 2 == 0 else dark
 			Kit.box(_board, Vector3(CELL * 0.94, 0.12, CELL * 0.94), _pos(cell) - Vector3(0, 0.06, 0), Kit.mat(color))
 			if _blocks.has(cell) and rover:
-				Kit.sphere(_board, 0.45, _pos(cell) + Vector3(0, 0.25, 0), Kit.mat(Color("5e626a"), 0.0, 0.0, 0.9), Vector3(1.1, 0.7, 0.95))
+				Kit.model(_board, "kenney/space/rock_largeA", Transform3D(Basis(Vector3.UP, x + y).scaled(Vector3.ONE * 1.1), _pos(cell)), false, null, Kit.MOON_ROCK)
 			elif _blocks.has(cell):
 				var block_color := Color(BLOCK_COLORS[(x * 7 + y * 3) % BLOCK_COLORS.size()])
 				Kit.box(_board, Vector3(0.8, 0.7, 0.8), _pos(cell) + Vector3(0, 0.35, 0), Kit.mat(block_color))
@@ -237,6 +250,11 @@ func _new_board() -> void:
 	_refresh_chips()
 	if _title:
 		_title.text = "%s  ·  NIVEL %d / %d" % [String(Game.info(_module).name).to_upper(), _level + 1, _levels.size()]
+
+
+func _animate(anim: String) -> void:
+	if _model:
+		_model.play(anim, 0.08)
 
 
 ## Programa más corto (BFS sobre casilla + rumbo); vacío si no hay camino.
@@ -285,6 +303,7 @@ func _reset_robot() -> void:
 	_heading = 0
 	_robot.position = _pos(_cell)
 	_robot.rotation = Vector3(0, PI, 0)  # el modelo mira a +Z; rumbo 0 es −Z
+	_animate("Idle")
 
 
 func _say(text: String) -> void:
@@ -333,19 +352,13 @@ func _build_ui() -> void:
 			var button := UI.button(spec[0], spec[1])
 			button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			buttons.add_child(button)
+			if not _first_button:
+				_first_button = button
 		column.add_child(buttons)
 	column.add_child(UI.label("Teclado: FLECHAS ↑ ← →  ·  RETROCESO borrar  ·  INTRO ejecutar  ·  ESC salir", "Caption"))
 	_title.text = "%s  ·  NIVEL %d / %d" % [String(Game.info(_module).name).to_upper(), _level + 1, _levels.size()]
 
 
-## Rover lunar de juguete mirando hacia +Z: chasis, 6 ruedas, mástil con cámara y panel solar.
+## Rover lunar del Space Kit de Kenney mirando hacia +Z.
 func _build_rover(body: Node3D) -> void:
-	Kit.box(body, Vector3(1.0, 0.35, 1.3), Vector3(0, 0.55, 0), Kit.mat(Color("f4f7fb")))
-	Kit.box(body, Vector3(1.1, 0.06, 0.9), Vector3(0, 0.78, -0.15), Kit.mat(Color("1d3f8f"), 0.3, 0.6, 0.08))
-	for x in [-0.6, 0.6]:
-		for z in [-0.5, 0.0, 0.5]:
-			Kit.cylinder(body, 0.22, 0.22, 0.18, Vector3(x, 0.25, z), Kit.mat(Color("2a2f38")), 16, Vector3(0, 0, PI / 2))
-	Kit.cylinder(body, 0.05, 0.05, 0.7, Vector3(0, 1.1, 0.45), Kit.mat(Color("cfd8e6")), 8)
-	Kit.box(body, Vector3(0.35, 0.22, 0.25), Vector3(0, 1.5, 0.45), Kit.mat(Game.info("moon_rover").color))
-	for side in [-0.08, 0.08]:
-		Kit.sphere(body, 0.05, Vector3(side, 1.52, 0.58), Kit.mat(Game.TEAL, 4.0))
+	Kit.model(body, "kenney/space/rover", Transform3D(Basis().scaled(Vector3.ONE * 4.0), Vector3.ZERO))

@@ -21,6 +21,9 @@ const CAMERA_HEIGHT := 1.5
 const JET_FUEL := 1.3  # segundos de empuje; se recarga al pisar suelo
 const JET_LIFT := 5.5  # velocidad de subida con el jetpack (m/s)
 const MAX_PRINTS := 80
+const PAD_TURN := 3.0  # giro de la cámara con el stick derecho (rad/s)
+const BLUE := Color("1f6fff")
+const GOLD := Color("ffb627")  # traje con todas las tuercas doradas
 
 @onready var _avatar: Node3D = $Avatar
 @onready var _yaw: Node3D = $CamYaw
@@ -34,15 +37,13 @@ var _jump_buffer := 0.0
 var _stride := 0.0
 var _zoom := 6.0
 var _shake := 0.0
-var _clock := 0.0
 var _prints: MultiMeshInstance3D  # huellas: una sola malla instanciada, un draw call para todas
 var _print_count := 0
 var _fuel := JET_FUEL
 var _jetting := false
 var _jet_sound := 0.0
-var _gauge: MeshInstance3D
-var _gauge_full: Material
-var _gauge_low: Material
+var _robot: RobotModel
+var _landing := 0.0  # segundos de la animación de aterrizaje que quedan
 var _flames: Array[Node3D] = []
 var _smoke := CPUParticles3D.new()
 var _fall_speed := 0.0
@@ -50,10 +51,7 @@ var _spawn: Transform3D
 var _nearby: Array[Interactable] = []
 var _target: Interactable
 var _last_prompt := ""
-var _arm_l: Node3D
-var _arm_r: Node3D
-var _leg_l: Node3D
-var _leg_r: Node3D
+var _golden := false
 
 
 func _ready() -> void:
@@ -66,6 +64,7 @@ func _ready() -> void:
 	_pitch.rotation.x = -0.35
 	_reach.area_entered.connect(_on_reach_entered)
 	_reach.area_exited.connect(_on_reach_exited)
+	Game.bolts_changed.connect(func(_count: int) -> void: if Game.golden() and not _golden: _redress())
 
 
 func _on_reach_entered(area: Area3D) -> void:
@@ -82,10 +81,16 @@ func _on_reach_exited(area: Area3D) -> void:
 func place(pos: Vector3, yaw: float) -> void:
 	global_position = pos
 	velocity = Vector3.ZERO
+	_jetting = false
 	_yaw.rotation.y = yaw
 	_avatar.rotation.y = yaw + PI
 	_yaw.global_position = pos + Vector3.UP * CAMERA_HEIGHT
 	reset_physics_interpolation()
+
+
+## Color del traje: azul, o dorado con todas las tuercas.
+func accent() -> Color:
+	return GOLD if _golden else BLUE
 
 
 ## Sacude la cámara (golpes, explosiones); se apaga sola en ~0,5 s.
@@ -108,11 +113,15 @@ func _unhandled_input(event: InputEvent) -> void:
 			_zoom = maxf(_zoom - 0.6, 3.0)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			_zoom = minf(_zoom + 0.6, 10.0)
-	elif event.is_action_pressed("interact") and _target:
+	elif event.is_action_pressed("interact") and is_instance_valid(_target):
 		_target.interact()
 
 
 func _process(delta: float) -> void:
+	if not Game.is_locked():
+		var look := Input.get_vector("look_left", "look_right", "look_up", "look_down")
+		_yaw.rotation.y -= look.x * PAD_TURN * delta
+		_pitch.rotation.x = clampf(_pitch.rotation.x - look.y * PAD_TURN * delta, PITCH_MIN, PITCH_MAX)
 	# La cámara se mueve por frame (sin interpolación física) siguiendo la posición interpolada del cuerpo.
 	var goal := get_global_transform_interpolated().origin + Vector3.UP * CAMERA_HEIGHT
 	_yaw.global_position = _yaw.global_position.lerp(goal, 1.0 - exp(-18.0 * delta))
@@ -125,8 +134,7 @@ func _process(delta: float) -> void:
 		flame.visible = _jetting
 		flame.scale = Vector3(1, randf_range(0.7, 1.3), 1)
 	_smoke.emitting = _jetting
-	_gauge.scale.x = maxf(_fuel / JET_FUEL, 0.05)
-	_gauge.material_override = _gauge_low if _fuel < JET_FUEL * 0.3 else _gauge_full
+	_robot.set_fuel(_fuel / JET_FUEL, _fuel < JET_FUEL * 0.3)
 
 
 func _physics_process(delta: float) -> void:
@@ -211,35 +219,33 @@ func _pick_target(locked: bool) -> void:
 
 func _animate(horizontal: Vector3, delta: float) -> void:
 	var speed := horizontal.length()
-	_clock += delta
 	var lean := 0.0
 	if speed > 0.3:
 		var turn := angle_difference(_avatar.rotation.y, atan2(horizontal.x, horizontal.z))
 		_avatar.rotation.y += turn * (1.0 - exp(-12.0 * delta))
 		lean = -clampf(turn, -0.8, 0.8) * 0.3 * speed / run_speed  # se inclina hacia el lado al que gira
 	_avatar.rotation.z = lerpf(_avatar.rotation.z, lean, 1.0 - exp(-8.0 * delta))
-	# Se inclina hacia delante al correr y "respira" parado.
-	_avatar.rotation.x = lerpf(_avatar.rotation.x, speed / run_speed * 0.22, 1.0 - exp(-8.0 * delta))
-	_avatar.position.y = sin(_clock * 2.5) * 0.03 if speed < 0.3 and is_on_floor() else 0.0
-	var swing := 0.0
 	if is_on_floor():
 		var before := sin(_stride)
 		_stride += delta * speed * 2.3
-		swing = sin(_stride) * clampf(speed / run_speed, 0.0, 1.0) * 1.2
 		if speed > 1.0 and signf(before) != signf(sin(_stride)):
 			Sfx.play("step", 0.15)
 			if footprints:
 				_footprint()
-	if _jetting:  # volando: brazos atrás y piernas colgando
-		_arm_l.rotation.x = 0.6
-		_arm_r.rotation.x = 0.6
-		_leg_l.rotation.x = 0.25
-		_leg_r.rotation.x = -0.1
+	# Animación según el estado; andar y correr van a la velocidad real para que los pies no patinen.
+	_landing -= delta
+	if _jetting:
+		_robot.play("Fly")
+	elif not is_on_floor():
+		_robot.play("Jump" if velocity.y > 0.0 else "Fall", 0.12)
+	elif speed > walk_speed + 0.5:
+		_robot.play("Run", 0.15, speed / run_speed * 1.15)
+	elif speed > 0.3:
+		_robot.play("Walk", 0.15, speed / walk_speed * 1.3)
+	elif _landing > 0.0:
+		_robot.play("Land", 0.05)
 	else:
-		_arm_l.rotation.x = swing if is_on_floor() else -2.4
-		_arm_r.rotation.x = -swing if is_on_floor() else -2.4
-		_leg_l.rotation.x = -swing if is_on_floor() else 0.5
-		_leg_r.rotation.x = swing if is_on_floor() else -0.3
+		_robot.play("Idle", 0.25)
 
 
 func _footprint() -> void:
@@ -266,6 +272,7 @@ func _footprint() -> void:
 func _land(fall_speed: float) -> void:
 	var k := clampf(fall_speed / 12.0, 0.3, 1.0)
 	Sfx.play("land", 0.1)
+	_landing = 0.3
 	Fx.burst(get_parent(), global_position, [Color.WHITE, Color("dfe7f2")], int(10 + 20 * k), 3.0 * k, 0.22)
 	shake(0.15 * k)
 	var tween := create_tween()
@@ -275,20 +282,12 @@ func _land(fall_speed: float) -> void:
 
 ## Robot del jugador con su jetpack: dos llamas que salen de las toberas, humo y la franja de combustible.
 func _build_avatar() -> void:
-	var limbs := Kit.robot(_avatar, Color("1f6fff"))
-	_arm_l = limbs[0]
-	_arm_r = limbs[1]
-	_leg_l = limbs[2]
-	_leg_r = limbs[3]
-	var pack: Node3D = _avatar.get_node("Jetpack")
-	_gauge = pack.get_node("Gauge")
-	_gauge_full = _gauge.material_override
-	_gauge_low = Kit.mat(Game.RED, 3.0)
-	for side in [-0.1, 0.1]:
+	_golden = Game.golden()
+	_robot = RobotModel.create(_avatar, accent(), Color("35b8ff"), true)
+	for nozzle in _robot.nozzles:
 		var flame := Node3D.new()  # pivote en la tobera: la llama se estira hacia abajo
-		flame.position = Vector3(side, 0.65, -0.3)
 		flame.visible = false
-		pack.add_child(flame)
+		nozzle.add_child(flame)
 		Kit.cylinder(flame, 0.055, 0.0, 0.36, Vector3(0, -0.18, 0), Kit.mat(Color("ffb347"), 4.0), 10).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		Kit.cylinder(flame, 0.03, 0.0, 0.2, Vector3(0, -0.1, 0), Kit.mat(Color("fff6c8"), 6.0), 8).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		_flames.append(flame)
@@ -303,7 +302,7 @@ func _build_avatar() -> void:
 	_smoke.lifetime = 0.5
 	_smoke.emitting = false
 	_smoke.local_coords = false
-	_smoke.position = Vector3(0, 0.45, -0.3)
+	_smoke.position = (_robot.nozzles[0].position + _robot.nozzles[1].position) / 2.0 + Vector3(0, -0.2, 0)
 	_smoke.direction = Vector3.DOWN
 	_smoke.spread = 18.0
 	_smoke.initial_velocity_min = 3.0
@@ -317,4 +316,18 @@ func _build_avatar() -> void:
 	grow.add_point(Vector2(1.0, 0.0))
 	_smoke.scale_amount_curve = grow
 	_smoke.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	pack.add_child(_smoke)
+	_robot.nozzles[0].get_parent().add_child(_smoke)
+
+
+## Cambia el traje (al conseguir la última tuerca) reconstruyendo el robot con su jetpack.
+func _redress() -> void:
+	for child in _avatar.get_children():
+		_avatar.remove_child(child)
+		child.queue_free()
+	_flames.clear()
+	_smoke = CPUParticles3D.new()
+	_build_avatar()
+	if find_children("*", "Decal", false, false):  # con sombra redonda, el robot no debe recibirla (Kit.blob_shadow)
+		for mesh: GeometryInstance3D in _avatar.find_children("*", "GeometryInstance3D", true, false):
+			mesh.layers = 2
+	Fx.confetti(get_parent(), global_position + Vector3.UP)

@@ -22,6 +22,8 @@ const PUMP := Vector3(2.4, 0.7, 2.4)  # bomba de aire, sobre la plataforma
 var _parts := {}  # "reto:i" -> Node3D
 var _ship := Node3D.new()  # todas las piezas: es lo que despega
 var _pad: Interactable
+var _beacon: MeshInstance3D  # haz de luz que se ve desde lejos cuando el cohete está listo para despegar
+var _ready_to_fly := false
 var _gyro: Node3D
 var _water_mesh: MeshInstance3D
 var _gauge: Label3D
@@ -69,6 +71,8 @@ func _ready() -> void:
 			Kit.bake(part)
 			part.visible = moon or int(Game.stars.get(module, 0)) > i
 			_parts["%s:%d" % [module, i]] = part
+	_beacon = Kit.cylinder(self, 0.9, 0.9, 80.0, Vector3(0, 50, 0), Kit.mat(Color(1.0, 0.85, 0.45, 0.22), 3.0), 16)
+	_beacon.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_gauge = Kit.label(self, "", Vector3(3.2, 3.2, 2.0), 64, Color.WHITE)
 	_pad = Kit.interactable(self, "", Vector3(0, 1.2, 4.0), 2.2)
 	_pad.interacted.connect(_on_pad)
@@ -87,6 +91,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_gyro.rotate_y(delta * 3.0)
+	_beacon.visible = _ready_to_fly and _stage == ""
 	match _stage:
 		"water":
 			_set_water(minf(_water + delta / 6.0, 1.0))
@@ -114,6 +119,7 @@ func _moon_done() -> int:
 
 
 func _refresh() -> void:
+	_ready_to_fly = _moon_done() == 4 if moon else _count() == 12
 	if moon:
 		var done := _moon_done()
 		_pad.prompt = "VOLVER A LA TIERRA" if done == 4 else "COHETE DE AGUA · sin agua no puedes volver (%d / 4 retos)" % done
@@ -176,8 +182,7 @@ func _launch() -> void:
 	pilot.position = Vector3(0, BASE + 4.75, 0)
 	pilot.scale = Vector3.ONE * 0.6
 	_ship.add_child(pilot)
-	var limbs := Kit.robot(pilot, Color("1f6fff"))
-	limbs[1].rotation = Vector3(-2.7, 0, 0.3)  # saluda desde la cabina
+	RobotModel.create(pilot, player.accent()).play("Wave", 0.0)  # saluda desde la cabina
 	_camera.position = Vector3(6, 3, 16)
 	_previous_camera = get_viewport().get_camera_3d()
 	_camera.make_current()

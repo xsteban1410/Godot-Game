@@ -22,7 +22,7 @@ var _board: Label3D
 func _ready() -> void:
 	var color: Color = Game.info("math").color
 	Kit.stand(self, Vector3(-3.5, 0, 4.0), color, "RETO: MATEMÁTICAS").interacted.connect(start)
-	_board = Kit.label(self, "MATES EN EL AIRE\nVuela con el jetpack\nhasta la respuesta", Vector3(0, 7.5, -8.55), 64, Color.WHITE, false, 0.01)
+	_board = Kit.label(self, "MATES EN EL AIRE\nVuela con el jetpack\nhasta la respuesta", Vector3(0, 7.5, -8.55), 64, Color.WHITE, false, 0.01, 8.2)
 	Kit.box(self, Vector3(8.6, 2.6, 0.3), Vector3(0, 7.5, -8.75), Kit.mat(Color("2a2f45")))
 	Kit.box(self, Vector3(8.9, 0.25, 0.4), Vector3(0, 8.9, -8.75), Kit.mat(color))
 	for x in [-3.6, 3.6]:

@@ -39,6 +39,7 @@ func _ready() -> void:
 		x += 3.0
 	Kit.interactable(self, "VERTER EL AGUA DEL HIELO", COLUMN + Vector3(-1.6, 1, 0.8), 1.4).interacted.connect(_pour)
 	Kit.bake(self, [_tank])
+	Bolt.spawn(self, "moon_water", COLUMN + Vector3(0, 4.8, 0))  # sobre la columna del filtro
 
 
 func _add(material: String) -> void:

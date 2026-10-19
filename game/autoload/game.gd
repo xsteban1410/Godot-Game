@@ -5,6 +5,7 @@ extends Node
 signal stars_changed(module: String, stars: int)
 signal toast(text: String, color: Color)
 signal prompt_changed(text: String)
+signal bolts_changed(count: int)
 
 const NAVY := Color("09131f")
 const TEAL := Color("1fd1c6")
@@ -31,9 +32,12 @@ const LAB_MODULES := {  # retos extra del STEAM LAB: no son piezas del cohete
 	"ai": {"name": "Desafío IA", "color": Color("00c2a8"), "desc": "Gana a NOVA, la IA del tres en raya"},
 }
 
+const BOLTS_TOTAL := 32  # tuercas doradas: 22 en la ciudad y 10 en la Luna (play_test lo comprueba)
+
 var save_path := "user://save.cfg"
 var arriving := false  # true mientras el cohete viaja: la escena de destino reproduce el aterrizaje
 var stars := {}  # id de módulo -> 0..3; solo sube, así repetir un reto nunca premia dos veces
+var bolts := {}  # id de tuerca -> true
 var _locks := {}  # quién bloquea -> si necesita el cursor visible
 var _fade := ColorRect.new()
 
@@ -44,6 +48,7 @@ func _ready() -> void:
 	var cfg := ConfigFile.new()
 	if cfg.load(save_path) == OK:
 		stars = cfg.get_value("progress", "stars", {})
+		bolts = cfg.get_value("progress", "bolts", {})
 	var layer := CanvasLayer.new()
 	layer.layer = 100
 	add_child(layer)
@@ -59,11 +64,29 @@ func set_stars(module: String, value: int) -> void:
 	if value <= int(stars.get(module, 0)):
 		return
 	stars[module] = value
+	_save()
+	stars_changed.emit(module, value)
+
+
+func collect_bolt(id: String) -> void:
+	if bolts.has(id):
+		return
+	bolts[id] = true
+	_save()
+	bolts_changed.emit(bolts.size())
+
+
+## Con todas las tuercas, el traje del robot es dorado.
+func golden() -> bool:
+	return bolts.size() >= BOLTS_TOTAL
+
+
+func _save() -> void:
 	var cfg := ConfigFile.new()
 	cfg.set_value("progress", "stars", stars)
+	cfg.set_value("progress", "bolts", bolts)
 	if cfg.save(save_path) != OK:
 		push_error("No se pudo guardar el progreso en " + save_path)
-	stars_changed.emit(module, value)
 
 
 ## Estrellas de los retos de la Tierra (por defecto) o de la Luna.
@@ -148,17 +171,35 @@ func go_to(scene: String) -> void:
 	pop_lock(_fade)
 
 
+## Teclado y mando: stick izquierdo mover, derecho cámara, A saltar, X usar, B/START = ESC, RB o L3 correr.
 func _register_inputs() -> void:
-	var map := {
-		"move_forward": [KEY_W, KEY_UP], "move_back": [KEY_S, KEY_DOWN],
-		"move_left": [KEY_A, KEY_LEFT], "move_right": [KEY_D, KEY_RIGHT],
-		"jump": [KEY_SPACE], "sprint": [KEY_SHIFT], "interact": [KEY_E], "pause": [KEY_ESCAPE],
+	var keys := {
+		"move_forward": [KEY_W, KEY_UP], "move_back": [KEY_S, KEY_DOWN], "move_left": [KEY_A, KEY_LEFT],
+		"move_right": [KEY_D, KEY_RIGHT], "jump": [KEY_SPACE], "sprint": [KEY_SHIFT], "interact": [KEY_E], "pause": [KEY_ESCAPE],
+		"look_up": [], "look_down": [], "look_left": [], "look_right": [],
 	}
-	for action: String in map:
-		InputMap.add_action(action)
-		for key: Key in map[action]:
+	var buttons := {"jump": [JOY_BUTTON_A], "sprint": [JOY_BUTTON_RIGHT_SHOULDER, JOY_BUTTON_LEFT_STICK],
+		"interact": [JOY_BUTTON_X], "pause": [JOY_BUTTON_B, JOY_BUTTON_START]}
+	var sticks := {
+		"move_forward": [JOY_AXIS_LEFT_Y, -1.0], "move_back": [JOY_AXIS_LEFT_Y, 1.0],
+		"move_left": [JOY_AXIS_LEFT_X, -1.0], "move_right": [JOY_AXIS_LEFT_X, 1.0],
+		"look_up": [JOY_AXIS_RIGHT_Y, -1.0], "look_down": [JOY_AXIS_RIGHT_Y, 1.0],
+		"look_left": [JOY_AXIS_RIGHT_X, -1.0], "look_right": [JOY_AXIS_RIGHT_X, 1.0],
+	}
+	for action: String in keys:
+		InputMap.add_action(action, 0.2)  # zona muerta pequeña: el stick inclinado poco mueve despacio
+		for key: Key in keys[action]:
 			var event := InputEventKey.new()
 			event.physical_keycode = key
+			InputMap.action_add_event(action, event)
+		for button: JoyButton in buttons.get(action, []):
+			var event := InputEventJoypadButton.new()
+			event.button_index = button
+			InputMap.action_add_event(action, event)
+		if sticks.has(action):
+			var event := InputEventJoypadMotion.new()
+			event.axis = sticks[action][0]
+			event.axis_value = sticks[action][1]
 			InputMap.action_add_event(action, event)
 
 

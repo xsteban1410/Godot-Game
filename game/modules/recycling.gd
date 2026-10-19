@@ -48,7 +48,7 @@ func _ready() -> void:
 		var spec: Array = BINS[id]
 		var base := Vector3(spec[2], 0, -6)
 		Kit.cylinder(self, 0.85, 0.75, 1.6, base + Vector3(0, 0.8, 0), Kit.mat(spec[1]), 32)
-		Kit.collider(self, Vector3(1.6, 1.6, 1.6), base + Vector3(0, 0.8, 0))
+		Kit.pillar(self, 0.85, 1.6, base + Vector3(0, 0.8, 0))
 		Kit.torus(self, 0.78, 0.92, base + Vector3(0, 1.2, 0), Kit.mat(Game.MODULES.recycling.color if id != "verde" else Color.WHITE))
 		var lid := Node3D.new()  # pivote en el borde trasero para abrir la tapa hacia atrás
 		lid.position = base + Vector3(0, 1.62, -0.85)
@@ -92,8 +92,9 @@ func start() -> void:
 
 
 func _pickup(item: Interactable) -> void:
-	if _busy or _carried:
+	if _carried:
 		Game.notify("Ya llevas un residuo: lánzalo a una caneca.", Game.GOLD)
+	if _busy or _carried:
 		return
 	_carried = item
 	item.set_enabled(false)

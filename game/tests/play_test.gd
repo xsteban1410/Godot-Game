@@ -13,6 +13,7 @@ func _initialize() -> void:
 	# Game._ready() carga save_path después de esto: sin borrar, una prueba cortada deja estrellas para la siguiente.
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(_game.save_path))
 	_game.stars = {}
+	_game.bolts = {}
 	change_scene_to_file("res://world/city.tscn")
 	_run.call_deferred()
 
@@ -64,6 +65,42 @@ func _run() -> void:
 	_game.pop_lock(self)
 	_check(not _game.is_locked(), "al cerrar el menú se recupera el control")
 
+
+	# --- Fase 15: mando, tuercas doradas, objetivo y ciudad viva ---
+	player.place(Vector3(0, 0.5, 22), 0.0)
+	await _frames(10)
+	start = player.global_position
+	var stick := InputEventJoypadMotion.new()
+	stick.axis = JOY_AXIS_LEFT_Y
+	stick.axis_value = -1.0
+	Input.parse_input_event(stick)
+	await _frames(30)
+	stick.axis_value = 0.0
+	Input.parse_input_event(stick)
+	_check(start.z - player.global_position.z > 1.5, "el stick izquierdo del mando mueve al jugador (%.2f m)" % (start.z - player.global_position.z))
+	var hud: CanvasLayer = current_scene.get_node("HUD")
+	_check("Gana estrellas" in hud.objective(false), "sin piezas, el objetivo es ganar estrellas")
+	_check(current_scene._robots.size() == 5, "Volt y cuatro robots ciudadanos pasean por la ciudad")
+	var bolts: Array = current_scene.find_children("*", "", true, false).filter(_is_bolt)
+	_check(bolts.size() == 22, "la ciudad tiene 22 tuercas doradas (%d)" % bolts.size())
+	var space := player.get_world_3d().direct_space_state
+	var stuck := bolts.filter(func(b: Area3D) -> bool: return not _reachable(space, b.global_position, 7.0))
+	_check(stuck.is_empty(), "cada tuerca de la ciudad tiene suelo a ≤ 7 m y no está dentro de un sólido %s" % [stuck.map(func(b: Area3D) -> String: return b.id)])
+	var bolt: Area3D = bolts[0]
+	player.place(bolt.global_position - Vector3(0, 0.9, 0), 0.0)
+	await _frames(5)
+	var saved := ConfigFile.new()
+	saved.load(_game.save_path)
+	_check(_game.bolts.size() == 1 and not is_instance_valid(bolt) and saved.get_value("progress", "bolts", {}).size() == 1,
+		"tocar una tuerca la recoge y se guarda")
+	while _game.bolts.size() < _game.BOLTS_TOTAL - 1:
+		_game.bolts["prueba_%d" % _game.bolts.size()] = true
+	_check(player.accent() == player.BLUE, "sin todas las tuercas el traje es azul")
+	player.place(bolts[1].global_position - Vector3(0, 0.9, 0), 0.0)
+	await _frames(5)
+	_check(_game.golden() and player.accent() == player.GOLD, "con la última tuerca el traje del robot es dorado")
+	player.place(Vector3(0, 0.5, 22), 0.0)
+	await _frames(30)
 
 	# --- Fase 2: STEAM LAB, viajes y pausa ---
 	var lab: CanvasLayer = current_scene.get_node("SteamLab")
@@ -155,7 +192,7 @@ func _run() -> void:
 	_check(_game.stars.get("robotics", 0) == 1 and robotics._level == 1, "la solución llega a la estrella: 1 estrella y nivel 2")
 	robotics._running = true  # a mitad de un programa
 	robotics.close()
-	_check(robotics._layer.visible, "SALIR no cierra Robótica mientras el robot ejecuta el programa")
+	_check(robotics._layer.visible and "Espera" in robotics._status.text, "SALIR no cierra Robótica mientras el robot ejecuta el programa, y lo explica")
 	robotics._running = false
 	robotics.close()
 	_check(get_root().get_viewport().get_camera_3d() != robotics._camera and not _game.is_locked(), "cerrar devuelve la cámara y el control")
@@ -263,10 +300,14 @@ func _run() -> void:
 		func(l: Label) -> bool: return l.text == "CERTIFICADO STEAM")
 	_check(not certificate.is_empty(), "con las 12 estrellas aparece el certificado")
 	_check(rocket._count() == 12 and "LANZAMIENTO" in rocket._pad.prompt, "con 12 estrellas el cohete está completo")
+	_check(rocket._beacon.visible and "Cohete completo" in current_scene.get_node("HUD").objective(false),
+		"con el cohete completo se enciende su haz de luz y el objetivo es lanzarlo")
 
 	# --- Fase 9: lanzamiento (E en la plataforma) ---
 	rocket._pad.interact()
 	_check(rocket._stage == "water", "con 12 piezas, E empieza a llenar de agua")
+	await _frames(2)
+	_check(not rocket._beacon.visible, "al preparar el lanzamiento el haz de luz se apaga")
 	rocket._set_water(0.05)
 	rocket._pad.interact()
 	for i in 8:
@@ -289,6 +330,12 @@ func _run() -> void:
 	_check(astronaut.gravity < 4.0 and astronaut.visible and not _game.is_locked(), "en la Luna: gravedad 1/6 y control tras el aterrizaje")
 
 	_check(_find("_moon_done")._pad.prompt.ends_with("(0 / 4 retos)"), "sin los retos lunares el cohete no puede volver")
+	_check("(0 / 4)" in current_scene.get_node("HUD").objective(true), "en la Luna, el objetivo son los 4 retos lunares")
+	var moon_bolts: Array = current_scene.find_children("*", "", true, false).filter(_is_bolt)
+	_check(moon_bolts.size() + 22 == _game.BOLTS_TOTAL, "la Luna tiene las 10 tuercas que faltan (%d)" % moon_bolts.size())
+	var moon_space := astronaut.get_world_3d().direct_space_state
+	var moon_stuck := moon_bolts.filter(func(b: Area3D) -> bool: return not _reachable(moon_space, b.global_position, 12.0))
+	_check(moon_stuck.is_empty(), "cada tuerca lunar tiene suelo a ≤ 12 m y no está dentro de un sólido %s" % [moon_stuck.map(func(b: Area3D) -> String: return b.id)])
 
 	# --- Fase 11: retos lunares ---
 	var moon_floor := astronaut.global_position.y
@@ -358,6 +405,7 @@ func _run() -> void:
 	await _frames(300)
 	var home: CharacterBody3D = get_first_node_in_group("player")
 	_check(home.visible and not _game.is_locked() and home.gravity > 10.0, "tras el paracaídas se juega en la Tierra con gravedad normal")
+	_check("tuercas doradas" in current_scene.get_node("HUD").objective(false), "de vuelta en casa, el objetivo es completarlo todo")
 	_check(not current_scene.get_node("HUD").find_children("*", "Label", true, false).filter(
 		func(l: Label) -> bool: return l.text == "CERTIFICADO DE ASTRONAUTA STEAM").is_empty(), "al aterrizar aparece el certificado de astronauta")
 	await _frames(700)
@@ -367,6 +415,21 @@ func _run() -> void:
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(_game.save_path))
 	print("PLAY TEST %s (%d fallos)" % ["OK" if _failures == 0 else "FALLÓ", _failures])
 	quit(1 if _failures else 0)
+
+
+## (Sin nombrar la clase Bolt: compilarla desde este script falla, aún no existe el autoload Game).
+func _is_bolt(node: Node) -> bool:
+	return node.get_script() != null and node.get_script().get_global_name() == &"Bolt"
+
+
+## La tuerca no está dentro de un sólido y hay suelo debajo a menos de `reach` m (altura de salto + jetpack).
+func _reachable(space: PhysicsDirectSpaceState3D, pos: Vector3, reach: float) -> bool:
+	var point := PhysicsPointQueryParameters3D.new()
+	point.position = pos
+	if not space.intersect_point(point).is_empty():
+		return false
+	var hit := space.intersect_ray(PhysicsRayQueryParameters3D.create(pos, pos + Vector3.DOWN * 100.0))
+	return not hit.is_empty() and pos.y - hit.position.y <= reach
 
 
 ## Busca en la escena actual (no en una lista guardada: los retos liberan nodos al ganarse).

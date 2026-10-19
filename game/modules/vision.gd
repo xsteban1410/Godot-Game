@@ -80,9 +80,9 @@ func _camera_model(color: Color) -> void:
 	Kit.box(self, Vector3(8.7, 0.25, 0.4), Vector3(0, 8.25, -9.3), Kit.mat(color))
 	for x in [-3.8, 3.8]:
 		Kit.cylinder(self, 0.12, 0.12, 4.4, Vector3(x, 2.2, -9.4), white, 10)
-	_board = Kit.label(self, "", Vector3(0, 7.6, -9.1), 60, Color.WHITE, false, 0.01)
+	_board = Kit.label(self, "", Vector3(0, 7.6, -9.1), 52, Color.WHITE, false, 0.01, 8.0)
 	_matrix = Kit.label(self, "", Vector3(-2.2, 5.7, -9.1), 38, Color("9fe8ff"), false, 0.01)
-	_results = Kit.label(self, "", Vector3(1.9, 5.7, -9.1), 40, Color.WHITE, false, 0.01)
+	_results = Kit.label(self, "", Vector3(1.9, 5.7, -9.1), 40, Color.WHITE, false, 0.01, 4.0)
 
 
 func _on_stand() -> void:

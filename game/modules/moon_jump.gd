@@ -24,6 +24,8 @@ func _ready() -> void:
 		Kit.collider(self, Vector3(2.8, 0.6, 2.8), p)
 		if i in CRYSTALS:
 			_crystal(CRYSTALS.find(i), p + Vector3(0, 1.3, 0))
+		elif i in [3, 6]:  # tuercas doradas en dos escalones sin hielo
+			Bolt.spawn(self, "moon_crater_%d" % i, p + Vector3(0, 1.3, 0))
 	Kit.bake(self)
 
 
@@ -38,9 +40,8 @@ func _crystal(index: int, pos: Vector3) -> void:
 	shape.shape = SphereShape3D.new()
 	(shape.shape as SphereShape3D).radius = 1.0
 	area.add_child(shape)
-	var ice := Kit.mat(Color(0.6, 0.95, 1.0, 0.8), 2.5, 0.0, 0.05)
-	for k in 3:
-		Kit.cylinder(area, 0.0, 0.22, 0.9 - k * 0.15, Vector3((k - 1) * 0.25, 0, 0), ice, 6, Vector3(0, 0, (k - 1) * 0.35))
+	var ice := Kit.MOON_ROCK.merged({"crystal": Kit.mat(Color(0.6, 0.95, 1.0), 2.5, 0.0, 0.05)})
+	Kit.model(area, "kenney/space/rock_crystals", Transform3D(Basis().scaled(Vector3.ONE * 2.0), Vector3(0, -1.0, 0)), false, null, ice)
 	add_child(area)
 	var spin := area.create_tween().set_loops()
 	spin.tween_property(area, "rotation:y", TAU, 3.0).from(0.0)

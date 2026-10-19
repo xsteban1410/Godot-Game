@@ -3,15 +3,80 @@ class_name Kit
 ## En Unity, cada script tenía su propio CreatePrimitive/CreateMaterial; aquí hay uno solo con caché.
 
 const TITLE_FONT := preload("res://ui/fonts/Rubik-ExtraBold.ttf")
-const EYE_SHADER := preload("res://core/eye.gdshader")
 const TOY_SHADER := preload("res://core/toy.gdshader")
 
+const MOON_ROCK := {"rock": Color("9a9ea6"), "rockDark": Color("7f838b"), "rockTrack": Color("858991")}  # rocas de Kenney en gris lunar
 const CHUNK := 32.0  # lado (m) de los trozos de `bake`: más grandes, menos draw calls; más pequeños, mejor culling
 
 static var _materials := {}
 static var _boxes := {}  # tamaño -> malla de caja redondeada (cajas iguales comparten malla)
 static var _toys := {}  # "metal|rugosidad" -> material de juguete con el color y la luz en los vértices
 static var _blob: GradientTexture2D
+static var _scenes := {}  # ruta -> PackedScene de los modelos .glb
+
+
+## El material de juguete equivalente a uno importado de Blender (mismo color, metal, rugosidad y luz propia):
+## así los modelos .glb comparten materiales y aspecto (borde de luz) con todo lo demás y se pueden fundir.
+static func toy(source: Material) -> Material:
+	if not source is StandardMaterial3D or source.albedo_texture:  # con textura (paleta de Kenney): tal cual
+		return source
+	var emission: float = source.emission_energy_multiplier if source.emission_enabled else 0.0
+	# metal puro sin nada que reflejar (noche, Luna) se ve negro: como mucho, plástico metalizado
+	return mat(source.albedo_color, emission, minf(source.metallic, 0.3), maxf(source.roughness, 0.25))
+
+
+## Modelo .glb de res://models/ (`path` sin extensión, p. ej. "kenney/nature/tree_oak") colocado con `xf` en
+## `parent`: sus mallas pasan a ser hijos directos (así Kit.bake las funde con lo demás) con materiales de juguete;
+## las superficies con textura de paleta la conservan, o usan `textured` si se da. `solid`: con colisión de caja.
+## `colors`: nombre de material -> Color (o Material) para recolorear, p. ej. las rocas rojizas de Kenney en la Luna.
+## El modelo se centra en su huella (el Space Kit trae el origen en una esquina). Devuelve su caja en coordenadas de `parent`.
+static func model(parent: Node3D, path: String, xf: Transform3D, solid := false, textured: Material = null, colors := {}) -> AABB:
+	if not _scenes.has(path):
+		_scenes[path] = load("res://models/%s.glb" % path)
+	var scene: Node3D = _scenes[path].instantiate()
+	var meshes := scene.find_children("*", "MeshInstance3D", true, false)
+	var locals: Array[Transform3D] = []
+	var footprint := AABB()
+	for mesh: MeshInstance3D in meshes:
+		var local := Transform3D.IDENTITY
+		var node: Node = mesh
+		while node != scene:
+			local = (node as Node3D).transform * local
+			node = node.get_parent()
+		locals.append(local)
+		var bounds := local * mesh.mesh.get_aabb()
+		footprint = bounds if locals.size() == 1 else footprint.merge(bounds)
+	var center := footprint.get_center()
+	var recenter := Transform3D(Basis(), Vector3(-center.x, 0.0, -center.z))
+	var box := AABB()
+	for m in meshes.size():
+		var mesh: MeshInstance3D = meshes[m]
+		var piece := MeshInstance3D.new()
+		piece.mesh = mesh.mesh
+		piece.transform = xf * recenter * locals[m]
+		for i in mesh.mesh.get_surface_count():
+			var source := mesh.get_active_material(i)
+			var textured_source: bool = source is StandardMaterial3D and source.albedo_texture != null
+			var material := textured if textured and textured_source else toy(source)
+			if colors.has(source.resource_name):
+				var paint: Variant = colors[source.resource_name]
+				material = paint if paint is Material else mat(paint, 0.0, source.metallic, source.roughness)
+			piece.set_surface_override_material(i, material)
+		parent.add_child(piece)
+		var bounds := piece.transform * mesh.mesh.get_aabb()
+		box = bounds if box.size == Vector3.ZERO else box.merge(bounds)
+	scene.free()
+	if solid:
+		collider(parent, box.size, box.get_center())
+	return box
+
+
+## Caja envolvente del modelo sin colocar (para escalarlo antes de ponerlo).
+static func model_size(path: String) -> AABB:
+	var probe := Node3D.new()
+	var box := model(probe, path, Transform3D.IDENTITY)
+	probe.free()
+	return box
 
 
 ## Plástico de juguete estilo Astro Bot: brillante y con un borde de luz que separa la silueta.
@@ -108,25 +173,32 @@ static func _stops(inner: float, radius: float) -> Array[float]:
 ## Lo que va en sub-nodos (pivotes que giran, piezas que se recogen) no se toca; `keep`: mallas que cambian.
 ## `chunk`: lado de los trozos (el horizonte, siempre a la vista, va entero en uno).
 static func bake(root: Node3D, keep: Array = [], chunk := CHUNK) -> void:
-	var groups := {}  # [trozo, material, sombra] -> [[malla, transformación, color], …]
+	var groups := {}  # [trozo, material, sombra] -> [[malla, superficie, transformación, color], …]
 	for node in root.get_children():
 		var piece := node as MeshInstance3D
-		if not piece or piece in keep or not piece.material_override:
+		if not piece or piece in keep or not piece.mesh:
 			continue
-		var material := piece.material_override
-		var color := Color.WHITE
-		if material is StandardMaterial3D:
-			if material.transparency == BaseMaterial3D.TRANSPARENCY_DISABLED:  # lo transparente conserva su material
-				color = Color(material.albedo_color, material.emission_energy_multiplier / 8.0 if material.emission_enabled else 0.0)
-				material = _toy(material.metallic, material.roughness)
-		elif piece.has_meta("tint") or material in _toys.values():  # (un trozo ya fundido trae su color en los vértices)
-			color = piece.get_meta("tint", Color.WHITE)
-		else:
-			continue  # sombreadores que dependen de su propio nodo (ojos que parpadean, holograma, agua)
-		var key := [Vector3i((piece.position / chunk).round()), material, piece.cast_shadow]  # trozos centrados: una pieza pequeña nunca se parte en dos
-		if not groups.has(key):
-			groups[key] = []
-		groups[key].append([piece.mesh, piece.transform, color])
+		var surfaces := []  # [material, color] de cada superficie; vacío si alguna no se puede fundir
+		for i in piece.mesh.get_surface_count():
+			var material := piece.get_active_material(i)
+			var color := Color.WHITE
+			if material is StandardMaterial3D:
+				if material.transparency == BaseMaterial3D.TRANSPARENCY_DISABLED and not material.albedo_texture:  # lo transparente o con textura conserva su material
+					color = Color(material.albedo_color, material.emission_energy_multiplier / 8.0 if material.emission_enabled else 0.0)
+					material = _toy(material.metallic, material.roughness)
+			elif not material or not (piece.has_meta("tint") or material in _toys.values() or material.has_meta("bakeable")):
+				surfaces.clear()  # sombreadores que dependen de su propio nodo (ojos que parpadean, holograma, agua)
+				break
+			else:  # (un trozo ya fundido trae su color en los vértices)
+				color = piece.get_meta("tint", Color.WHITE)
+			surfaces.append([material, color])
+		if surfaces.is_empty():
+			continue
+		for i in surfaces.size():
+			var key := [Vector3i((piece.position / chunk).round()), surfaces[i][0], piece.cast_shadow]  # trozos centrados: una pieza pequeña nunca se parte en dos
+			if not groups.has(key):
+				groups[key] = []
+			groups[key].append([piece.mesh, i, piece.transform, surfaces[i][1]])
 		root.remove_child(piece)
 		piece.queue_free()
 	for key: Array in groups:
@@ -137,7 +209,7 @@ static func bake(root: Node3D, keep: Array = [], chunk := CHUNK) -> void:
 		root.add_child(merged)
 
 
-## Una malla con todas las piezas [malla, transformación, color] y sus LOD generados por Godot.
+## Una malla con todas las piezas [malla, superficie, transformación, color] y sus LOD generados por Godot.
 static func merge(pieces: Array) -> Mesh:
 	var vertices := PackedVector3Array()
 	var normals := PackedVector3Array()
@@ -145,8 +217,8 @@ static func merge(pieces: Array) -> Mesh:
 	var uvs := PackedVector2Array()
 	var indices := PackedInt32Array()
 	for piece: Array in pieces:
-		var arrays: Array = piece[0].surface_get_arrays(0)
-		var xf: Transform3D = piece[1]
+		var arrays: Array = piece[0].surface_get_arrays(piece[1])
+		var xf: Transform3D = piece[2]
 		var start := vertices.size()
 		var count: int = arrays[Mesh.ARRAY_VERTEX].size()
 		vertices.append_array(xf * arrays[Mesh.ARRAY_VERTEX])
@@ -154,7 +226,7 @@ static func merge(pieces: Array) -> Mesh:
 		var tint: PackedColorArray = arrays[Mesh.ARRAY_COLOR] if arrays[Mesh.ARRAY_COLOR] else PackedColorArray()
 		if tint.is_empty():  # (si ya traía color por vértice, es un trozo ya fundido: se conserva)
 			tint.resize(count)
-			tint.fill(piece[2])
+			tint.fill(piece[3])
 		colors.append_array(tint)
 		var uv: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV] if arrays[Mesh.ARRAY_TEX_UV] else PackedVector2Array()
 		uv.resize(count)
@@ -226,62 +298,6 @@ static func torus(parent: Node3D, inner: float, outer: float, pos: Vector3, mate
 	return part(parent, mesh, pos, material, rot)
 
 
-## Robot estilo Astro Bot mirando hacia +Z, de ~1,9 m: cabeza grande blanca, visor negro con reflejo y ojos LED
-## que parpadean, hombreras, cinturón y botas del color `accent`.
-## Devuelve los pivotes [brazo izq., brazo der., pierna izq., pierna der.].
-static func robot(parent: Node3D, accent: Color, eyes := Color("35b8ff")) -> Array[Node3D]:
-	var white := mat(Color("f4f7fb"), 0.0, 0.0, 0.15)
-	var joint := mat(Color("3a4352"), 0.0, 0.4, 0.3)
-	var color := mat(accent, 0.0, 0.1, 0.2)
-	var eye := ShaderMaterial.new()
-	eye.shader = EYE_SHADER
-	eye.set_shader_parameter("color", eyes)
-	sphere(parent, 0.4, Vector3(0, 1.6, 0), white)
-	sphere(parent, 0.35, Vector3(0, 1.6, 0.13), mat(Color("05070c"), 0.0, 0.3, 0.03), Vector3(1.0, 0.76, 0.66))
-	sphere(parent, 0.06, Vector3(-0.17, 1.74, 0.33), mat(Color.WHITE, 1.5), Vector3(1.6, 0.6, 0.3))  # reflejo del visor
-	cylinder(parent, 0.17, 0.2, 0.12, Vector3(0, 1.22, 0), joint, 16)  # cuello
-	for side in [-1.0, 1.0]:
-		sphere(parent, 0.065, Vector3(0.12 * side, 1.63, 0.36), eye, Vector3(0.8, 1.35, 0.4))
-		cylinder(parent, 0.11, 0.11, 0.08, Vector3(0.4 * side, 1.6, 0), color, 16, Vector3(0, 0, PI / 2))
-		sphere(parent, 0.06, Vector3(0.44 * side, 1.6, 0), mat(eyes, 3.0))
-	capsule(parent, 0.27, 0.66, Vector3(0, 0.98, 0), white)
-	cylinder(parent, 0.1, 0.1, 0.04, Vector3(0, 1.04, 0.26), mat(eyes, 2.5), 20, Vector3(PI / 2, 0, 0))
-	# Mochila propulsora (jetpack): la cámara siempre ve la espalda. Va en su propio nodo para que el jugador
-	# encienda las toberas y use la franja de luz ("Gauge") como indicador de combustible.
-	var pack := Node3D.new()
-	pack.name = "Jetpack"
-	parent.add_child(pack)
-	box(pack, Vector3(0.4, 0.44, 0.2), Vector3(0, 1.02, -0.3), color)
-	var gauge := box(pack, Vector3(0.3, 0.06, 0.04), Vector3(0, 1.14, -0.41), mat(eyes, 2.5))
-	gauge.name = "Gauge"
-	for side in [-0.1, 0.1]:
-		cylinder(pack, 0.06, 0.08, 0.14, Vector3(side, 0.74, -0.3), joint, 12)
-		cylinder(pack, 0.045, 0.045, 0.02, Vector3(side, 0.66, -0.3), mat(eyes, 3.0), 12)
-	bake(pack, [gauge])
-	torus(parent, 0.22, 0.29, Vector3(0, 0.8, 0), color)  # cinturón
-	sphere(parent, 0.22, Vector3(0, 0.72, 0), joint, Vector3(1.0, 0.6, 0.9))
-	var limbs: Array[Node3D] = []
-	for spec in [[Vector3(0.34, 1.18, 0), false], [Vector3(-0.34, 1.18, 0), false],
-			[Vector3(0.13, 0.72, 0), true], [Vector3(-0.13, 0.72, 0), true]]:
-		var pivot := Node3D.new()
-		pivot.position = spec[0]
-		parent.add_child(pivot)
-		if spec[1]:
-			sphere(pivot, 0.1, Vector3.ZERO, joint)
-			capsule(pivot, 0.1, 0.42, Vector3(0, -0.24, 0), white)
-			capsule(pivot, 0.14, 0.4, Vector3(0, -0.58, 0.06), color, Vector3(PI / 2, 0, 0))
-			box(pivot, Vector3(0.24, 0.05, 0.4), Vector3(0, -0.7, 0.06), joint)  # suela
-		else:
-			sphere(pivot, 0.13, Vector3.ZERO, color, Vector3(1.1, 0.9, 1.1))  # hombrera
-			capsule(pivot, 0.085, 0.4, Vector3(0, -0.2, 0), white)
-			cylinder(pivot, 0.095, 0.095, 0.06, Vector3(0, -0.3, 0), color, 16)
-			sphere(pivot, 0.12, Vector3(0, -0.44, 0), white)  # guante
-		bake(pivot)
-		limbs.append(pivot)
-	bake(parent)  # ~45 piezas en ~20 draw calls
-	return limbs
-
-
 ## Sombra redonda bajo un personaje para las escenas sin sombras del Sol (la Tierra de noche): un decal que
 ## cae en vertical sobre lo que haya debajo (hasta 11 m) y no sobre el propio personaje (sus mallas pasan a la capa 2).
 static func blob_shadow(character: Node3D) -> void:
@@ -311,6 +327,21 @@ static func solid(parent: Node3D, size: Vector3, pos: Vector3, material: Materia
 	return box(body, size, Vector3.ZERO, material)
 
 
+## Colisión invisible en forma de cilindro vertical (torres, postes, troncos): una caja dejaba esquinas
+## invisibles en las diagonales.
+static func pillar(parent: Node3D, radius: float, height: float, pos: Vector3) -> StaticBody3D:
+	var body := StaticBody3D.new()
+	body.position = pos
+	var shape := CollisionShape3D.new()
+	var cylinder_shape := CylinderShape3D.new()
+	cylinder_shape.radius = radius
+	cylinder_shape.height = height
+	shape.shape = cylinder_shape
+	body.add_child(shape)
+	parent.add_child(body)
+	return body
+
+
 ## Colisión invisible en forma de caja.
 static func collider(parent: Node3D, size: Vector3, pos: Vector3) -> StaticBody3D:
 	var body := StaticBody3D.new()
@@ -324,9 +355,13 @@ static func collider(parent: Node3D, size: Vector3, pos: Vector3) -> StaticBody3
 	return body
 
 
+## `width` (m): si es > 0, el texto se parte en líneas para no salirse de su pizarra.
 static func label(parent: Node3D, text: String, pos: Vector3, font_size: int, color: Color,
-		billboard := true, pixel := 0.01) -> Label3D:
+		billboard := true, pixel := 0.01, width := 0.0) -> Label3D:
 	var node := Label3D.new()
+	if width > 0.0:
+		node.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		node.width = width / pixel
 	node.text = text
 	node.font = TITLE_FONT
 	node.font_size = font_size
@@ -356,7 +391,7 @@ static func stand(parent: Node3D, pos: Vector3, color: Color, prompt: String) ->
 	cylinder(parent, 0.6, 0.8, 1.0, pos + Vector3(0, 0.5, 0), mat(Color("f4f7fb")), 32)
 	torus(parent, 0.5, 0.66, pos + Vector3(0, 1.0, 0), mat(color.lightened(0.3), 1.5))
 	sphere(parent, 0.46, pos + Vector3(0, 1.02, 0), mat(color, 0.5), Vector3(1, 0.42, 1))
-	collider(parent, Vector3(1.6, 1.2, 1.6), pos + Vector3(0, 0.6, 0))
+	pillar(parent, 0.8, 1.2, pos + Vector3(0, 0.6, 0))
 	var sign := label(parent, "¡JUGAR!", pos + Vector3(0, 2.1, 0), 60, color.lightened(0.25), true, 0.009)
 	sign.outline_size = 14
 	var bob := sign.create_tween().set_loops()
