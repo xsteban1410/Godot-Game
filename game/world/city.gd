@@ -43,6 +43,10 @@ const LANDMARK_BOLTS := {  # tuerca dorada de cada monumento, en sus coordenadas
 	"ai": Vector3(3.2, 3.6, 0),  # dentro de la O gigante
 }
 
+const WELCOME := "¡Bienvenido a Ciudad STEAM! Gana estrellas en los retos: cada una es una pieza del cohete de agua que te llevará a la Luna."
+
+static var _welcomed := false
+
 var _rings := {}  # id de módulo -> aro del distrito
 var _star_labels := {}  # id de módulo -> estrellas sobre el arco
 var _spinners: Array[Node3D] = []
@@ -94,12 +98,9 @@ func _ready() -> void:
 		var side: Vector3 = dir.cross(Vector3.UP) * spec[2]  # a un lado de la calle, fuera de las luces guía
 		_walker(spec[1], PackedVector3Array([dir * 19.0 + side, dir * 30.0 + side]))
 	_bolts()
-	var ivy := Ivy.new()  # la robot guía: saluda en la calle, en la plaza, en cada distrito y en el cohete
-	add_child(ivy)
-	ivy.zone("plaza", Vector3.ZERO, PLAZA_RADIUS)
-	for id: String in DISTRICTS:
-		ivy.zone(id, DISTRICTS[id], DISTRICT_RADIUS)
-	ivy.zone("rocket", LAUNCH, 6.0)
+	if not _welcomed:  # la bienvenida, una vez por sesión (no al volver de la Luna)
+		_welcomed = true
+		get_tree().create_timer(2.0).timeout.connect(Game.notify.bind(WELCOME, Game.GOLD))
 	$SteamLab.travel_requested.connect(_travel_to_district)
 	Game.stars_changed.connect(_on_stars_changed)
 

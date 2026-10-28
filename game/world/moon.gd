@@ -30,7 +30,8 @@ const BOLTS := [  # tuercas doradas de la llanura (las del cráter y el purifica
 	Vector3(24, 3.4, -24),  # sobre la nave de carga
 	Vector3(-95, 0.8, -60), Vector3(80, 0.8, 85),  # lejos, en la llanura
 ]
-const STORY := [  # (la bienvenida y la gravedad las cuenta Ivy al aterrizar)
+const STORY := [
+	"¡Llegaste a la Luna! Aquí la gravedad es seis veces menor que en la Tierra: saltas mucho más alto.",
 	"JEFE DE BASE: Tu cohete funciona con agua… y aquí no hay ríos ni lluvia.",
 	"JEFE DE BASE: Pero en los cráteres del polo, donde nunca llega el Sol, hay hielo. ¡Será tu combustible para volver!",
 ]
@@ -64,12 +65,8 @@ func _ready() -> void:
 	rocket.moon = true
 	rocket.position = Vector3(0, 0, -6)
 	add_child(rocket)
-	var ivy := Ivy.new()
-	ivy.home = "moon"
-	add_child(ivy)
 	for pos: Vector3 in CHALLENGES:
 		var id: String = CHALLENGES[pos]
-		ivy.zone(id, pos, 16.0 if id == "moon_jump" else 11.0)
 		var challenge: Node3D = SCRIPTS[id].new()
 		if id == "moon_rover":
 			challenge.rover = true
@@ -96,7 +93,7 @@ func _ready() -> void:
 	for i in BOLTS.size():
 		Bolt.spawn(self, "moon_%d" % i, BOLTS[i])
 	for i in STORY.size():
-		get_tree().create_timer(16.0 + i * 4.0).timeout.connect(_story.bind(i))  # tras el saludo de Ivy
+		get_tree().create_timer(2.0 + i * 4.0).timeout.connect(_story.bind(i))
 
 
 func _process(delta: float) -> void:

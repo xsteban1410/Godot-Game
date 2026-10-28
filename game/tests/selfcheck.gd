@@ -101,45 +101,11 @@ func _initialize() -> void:
 	var symbols: FontFile = load("res://ui/fonts/Symbols.ttf")
 	_check(Array("★☆←↑→Ω".split("")).all(func(c: String) -> bool: return symbols.has_char(c.unicode_at(0))), "Symbols.ttf tiene ★ ☆ ← ↑ → Ω")
 
-	# Ivy: lineas.json (lo edita el usuario, ver ivy/GUIA.md) bien escrito, completo y con cada frase grabada.
-	var json := JSON.new()
-	var parsed := json.parse(FileAccess.get_file_as_string("res://ivy/lineas.json"))
-	_check(parsed == OK and json.data is Dictionary, "ivy/lineas.json es un JSON válido%s" % [
-		"" if parsed == OK else " (línea %d: %s)" % [json.get_error_line(), json.get_error_message()]])
-	if parsed == OK and json.data is Dictionary:
-		var missing: Array[String] = []
-		for path in ["general/ayuda", "general/boton_despues", "general/boton_cerrar", "historia/estrellas",
-				"historia/lanzar", "historia/hielo", "historia/volver", "historia/todo"]:
-			if not _text(json.data, path.split("/")):
-				missing.append(path)
-		var zones: Array = load("res://world/city.gd").DISTRICTS.keys() + ["city", "plaza", "rocket", "moon"] \
-			+ load("res://world/moon.gd").CHALLENGES.values()
-		for id: String in zones:
-			if not _text(json.data, ["zonas", id, "saludo"]):
-				missing.append("zonas/%s/saludo" % id)
-			var questions: Variant = json.data.get("zonas", {}).get(id, {}).get("preguntas", [])
-			if not questions is Array or not questions.all(func(q: Variant) -> bool: return _text(q, ["pregunta"]) and _text(q, ["respuesta"])):
-				missing.append("zonas/%s/preguntas (cada una con «pregunta» y «respuesta»)" % id)
-		_check(missing.is_empty(), "ivy/lineas.json tiene todas sus partes%s" % ["" if missing.is_empty() else ": falta " + ", ".join(missing)])
-		var ivy: GDScript = load("res://ivy/ivy.gd")
-		var silent: Array = ivy.all_lines().filter(func(t: String) -> bool: return not FileAccess.file_exists(ivy.voice_path(t)))
-		_check(silent.is_empty(), "cada frase de Ivy tiene su voz grabada%s" % [
-			"" if silent.is_empty() else " (faltan %d: pasa tools/voice.gd; la primera: «%s»)" % [silent.size(), silent[0]]])
-
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(game.save_path))
 	game._fade.free()  # sin _ready no cuelga de nadie: se liberaría solo al salir, como fuga
 	game.free()
 	print("SELFCHECK %s (%d fallos)" % ["OK" if _failures == 0 else "FALLÓ", _failures])
 	quit(1 if _failures else 0)
-
-
-## ¿Siguiendo las claves `path` desde `data` hay un texto no vacío?
-func _text(data: Variant, path: Array) -> bool:
-	for key in path:
-		if not data is Dictionary or not data.has(key):
-			return false
-		data = data[key]
-	return data is String and not data.is_empty()
 
 
 ## ¿Hay alguna forma de que X gane si la IA del nivel 3 responde a cada jugada?

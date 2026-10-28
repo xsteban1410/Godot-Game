@@ -16,7 +16,7 @@ func _initialize() -> void:
 
 
 func _run(scene: String) -> void:
-	for i in 300:  # ~3 s: que compilen los shaders y baje Ivy; si no, el primer punto mide el arranque
+	for i in 300:  # ~3 s: que compilen los shaders; si no, el primer punto mide el arranque
 		await process_frame
 	var player = get_first_node_in_group("player")
 	for spot: Array in SPOTS[scene]:

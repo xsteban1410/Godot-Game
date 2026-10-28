@@ -5,6 +5,7 @@ extends SceneTree
 
 var _failures := 0
 var _game: Node
+var _toasts: Array[String] = []  # avisos de Game.notify, en orden
 
 
 func _initialize() -> void:
@@ -15,6 +16,7 @@ func _initialize() -> void:
 	_game.stars = {}
 	_game.bolts = {}
 	_game.ice = {}
+	_game.toast.connect(func(text: String, _color: Color) -> void: _toasts.append(text))
 	change_scene_to_file("res://world/city.tscn")
 	_run.call_deferred()
 
@@ -110,30 +112,8 @@ func _run() -> void:
 	await _frames(1)
 	_check(pad_key == "X" and hud._key.text == "E", "el aviso muestra X tras usar el mando y E tras usar el teclado")
 
-	# --- Fase 16: Ivy, la robot guía ---
-	var ivy: Node3D = _find("next_step")
-	_check(ivy.all_lines().all(func(t: String) -> bool: return ResourceLoader.exists(ivy.voice_path(t))), "cada frase de Ivy tiene su voz grabada e importada")
-	_check(ivy._greeted.has("city"), "al empezar, Ivy da la bienvenida (aunque ya estés en la plaza)")
-	ivy._quiet = 0.0  # (que termine la frase que esté diciendo)
-	player.place(current_scene.DISTRICTS.solar + Vector3(0, 0.5, 6), 0.0)
-	await _frames(10)
-	var solar_zone: Dictionary = ivy._zone("solar")
-	_check(ivy.visible and ivy._text.text == solar_zone.saludo and ivy._voice.stream != null, "al pisar el distrito solar, Ivy baja y lo explica con voz")
-	_press("ivy")
-	await _frames(2)
-	_check(_game.is_locked() and _game.wants_cursor() and ivy._menu != null, "F abre el panel de Ivy con el cursor")
-	var question: Dictionary = solar_zone.preguntas[1]
-	_button(ivy, question.pregunta).pressed.emit()
-	_check(ivy._text.text == question.respuesta, "las preguntas del panel son las de la zona en lineas.json")
-	_button(ivy, ivy.data().general.boton_despues).pressed.emit()
-	_check(ivy._text.text == ivy.data().historia.estrellas, "«¿Qué hago después?» sigue la historia")
-	_press("pause")
-	await _frames(2)
-	_check(ivy._menu == null and not _game.is_locked(), "ESC cierra el panel de Ivy y devuelve el control")
-	_game.push_lock(self)
-	await _frames(2)
-	_check(not ivy._shown, "con un reto abierto, Ivy se calla y se va")
-	_game.pop_lock(self)
+	# --- Fase 16: la historia sale en avisos ---
+	_check(_toasts.has(current_scene.WELCOME), "al empezar en la ciudad sale la bienvenida")
 	_check(current_scene._robots.size() == 5, "Volt y cuatro robots ciudadanos pasean por la ciudad")
 	var bolts: Array = current_scene.find_children("*", "", true, false).filter(_is_bolt)
 	_check(bolts.size() == 22, "la ciudad tiene 22 tuercas doradas (%d)" % bolts.size())
@@ -389,9 +369,7 @@ func _run() -> void:
 	await _frames(500)
 	var astronaut: CharacterBody3D = get_first_node_in_group("player")
 	_check(astronaut.gravity < 4.0 and astronaut.visible and not _game.is_locked(), "en la Luna: gravedad 1/6 y control tras el aterrizaje")
-	await _frames(2)
-	var guide: Node3D = _find("next_step")
-	_check(guide.home == "moon" and guide._text.text == guide._zone("moon").saludo, "al aterrizar en la Luna, Ivy la presenta")
+	_check(_toasts.has(current_scene.STORY[0]), "al aterrizar en la Luna, un aviso cuenta la gravedad")
 
 	_check(_find("_set_water")._pad.prompt.ends_with("(0 / 4 retos)"), "sin los retos lunares el cohete no puede volver")
 	_check("(0 / 4)" in current_scene.get_node("HUD").objective(true), "en la Luna, el objetivo son los 4 retos lunares")
