@@ -188,6 +188,8 @@ func travel(pos: Vector3, yaw: float) -> void:
 
 ## Viaja a otra escena (la Luna, la Tierra) con el mismo fundido.
 func go_to(scene: String) -> void:
+	if _locks.has(_fade):
+		return
 	push_lock(_fade, false)
 	await create_tween().tween_property(_fade, "color:a", 1.0, 0.6).finished
 	_locks = {_fade: false}  # los bloqueos de la escena anterior desaparecen con ella

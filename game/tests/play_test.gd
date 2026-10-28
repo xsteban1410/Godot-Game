@@ -352,9 +352,13 @@ func _run() -> void:
 	var city: Node3D = current_scene
 	_check(city._star_labels["bridge"].text == "★★★", "el arco del distrito muestra sus estrellas")
 	_check(city._rings["bridge"].material_override.emission_energy_multiplier > 1.0, "con 3 estrellas el aro del distrito brilla")
-	await _frames(240)
-	var certificate: Array = current_scene.get_node("HUD").find_children("*", "Label", true, false).filter(
-		func(l: Label) -> bool: return l.text == "CERTIFICADO STEAM")
+	var certificate: Array = []
+	for i in 30:  # las 4 celebraciones salen en fila (~3,3 s cada una) y después el certificado
+		await _frames(60)
+		certificate = current_scene.get_node("HUD").find_children("*", "Label", true, false).filter(
+			func(l: Label) -> bool: return l.text == "CERTIFICADO STEAM")
+		if not certificate.is_empty():
+			break
 	_check(not certificate.is_empty(), "con las 12 estrellas aparece el certificado")
 	_check(rocket._count() == 12 and "LANZAMIENTO" in rocket._pad.prompt, "con 12 estrellas el cohete está completo")
 	_check(rocket._beacon.visible and "Cohete completo" in current_scene.get_node("HUD").objective(false),

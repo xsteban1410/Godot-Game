@@ -202,7 +202,8 @@ func _win() -> void:
 	_running = false
 
 
-func _new_board() -> void:
+## Tablero del nivel actual: tamaño, meta y bloques al azar con solución en ≤ MAX_PROGRAM pasos.
+func _place_blocks() -> void:
 	var config: Array = _levels[_level]
 	_size = Vector2i(config[0], config[1])
 	_goal = _size - Vector2i.ONE
@@ -216,10 +217,14 @@ func _new_board() -> void:
 		_blocks.clear()
 		for c in cells.slice(0, config[2]):
 			_blocks[c] = true
-		var solution := _solve()
-		if not solution.is_empty() and solution.size() <= MAX_PROGRAM:
+		if _solvable():
 			break
+	while not _solvable():  # (casi nunca) quitar bloques hasta que lo haya; sin bloques siempre cabe
+		_blocks.erase(_blocks.keys().pick_random())
 
+
+func _new_board() -> void:
+	_place_blocks()
 	UI.clear(_board)
 	for x in _size.x:
 		for y in _size.y:
@@ -256,6 +261,11 @@ func _new_board() -> void:
 func _animate(anim: String) -> void:
 	if _model:
 		_model.play(anim, 0.08)
+
+
+func _solvable() -> bool:
+	var solution := _solve()
+	return not solution.is_empty() and solution.size() <= MAX_PROGRAM
 
 
 ## Programa más corto (BFS sobre casilla + rumbo); vacío si no hay camino.

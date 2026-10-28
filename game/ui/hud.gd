@@ -8,6 +8,7 @@ var _prompt_label: Label
 var _key: Label  # tecla del aviso: E con teclado, X con mando
 var _toasts: VBoxContainer
 var _celebration := CanvasLayer.new()
+var _shout_until := 0.0  # hasta cuándo (s de reloj) ocupa la pantalla el último rótulo de _shout
 @export var moon := false  # en la Luna se listan los retos lunares
 
 
@@ -144,7 +145,13 @@ func _show_toast(text: String, color: Color) -> void:
 
 
 ## Rótulo grande en el centro que aparece con rebote y se desvanece; devuelve su columna para añadir más.
+## Si ya hay otro en pantalla, espera a que se vaya (nunca dos encimados).
 func _shout(text: String, color: Color, subtitle := "") -> VBoxContainer:
+	var now := Time.get_ticks_msec() / 1000.0
+	var wait := _shout_until - now
+	_shout_until = maxf(_shout_until, now) + 3.3
+	if wait > 0.0:
+		await get_tree().create_timer(wait).timeout
 	var center := CenterContainer.new()
 	center.theme = UI.THEME
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -173,7 +180,7 @@ func _shout(text: String, color: Color, subtitle := "") -> VBoxContainer:
 ## Celebración: nombre del reto y estrellas que aparecen una a una con rebote.
 func _on_stars_changed(module: String, stars: int) -> void:
 	_refresh_missions()
-	var column := _shout("¡%s!" % String(Game.info(module).name).to_upper(), Game.info(module).color)
+	var column: VBoxContainer = await _shout("¡%s!" % String(Game.info(module).name).to_upper(), Game.info(module).color)
 	var row := HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	column.add_child(row)

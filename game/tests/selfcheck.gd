@@ -62,6 +62,20 @@ func _initialize() -> void:
 	board.assign([2, 2, 0, 1, 1, 0, 1, 0, 0])
 	_check(ai.choose(board, 1) == 2, "la IA del nivel 2 prefiere ganar a tapar")
 
+	# Robótica y rover: todo tablero al azar tiene solución dentro del límite de órdenes.
+	var robotics: Node3D = load("res://modules/robotics.gd").new()
+	for levels: Array in [robotics.LEVELS, robotics.ROVER_LEVELS]:
+		robotics._levels = levels
+		for level in levels.size():
+			robotics._level = level
+			var solvable := true
+			for i in 200:
+				robotics._place_blocks()
+				solvable = solvable and robotics._solvable()
+			_check(solvable, "200 tableros %s del nivel %d tienen solución" % ["del rover" if levels == robotics.ROVER_LEVELS else "de robótica", level + 1])
+	for owned: Node in [robotics._board, robotics._robot, robotics._camera, robotics._layer, robotics]:
+		owned.free()
+
 	# Visión IA: cada figura aprendida se reconoce como ella misma y con seguridad; un dibujo vacío, no.
 	var vision: GDScript = load("res://modules/vision.gd")
 	for shape: String in vision.SHAPES:

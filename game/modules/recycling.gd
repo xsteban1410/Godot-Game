@@ -146,16 +146,32 @@ func _throw(id: String) -> void:
 		Fx.burst(self, target, [Color("ff5d5d"), Color("5a6b7d"), Color("2a2f38")], 30, 5.0, 0.2)
 		Fx.shake(self, 0.3)
 		Game.notify("¡No va en la %s! %s" % [id, data[2]], Game.RED)
-		var home: Vector3 = item.get_meta("home")
-		var back := create_tween().set_parallel()
-		back.tween_property(item, "position", home, 0.6).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
-		back.tween_property(item, "scale", Vector3.ONE * 1.5, 0.6)
-		await back.finished
-		item.set_enabled(true)
+		await _send_home(item)
 	_busy = false
 	_refresh()
 	if _done == ROUND:
 		_finish()
+
+
+## Si te alejas del reto con un residuo en la mano, vuelve a su sitio (no se pasea por la ciudad).
+func _process(_delta: float) -> void:
+	if _carried and not _busy and _carried.global_position.distance_to(global_position) > 14.0:
+		var item := _carried
+		_carried = null
+		item.reparent(self)
+		Game.notify("El residuo vuelve a su sitio: recíclalo sin salir del reto.", Game.GOLD)
+		_refresh()
+		_send_home(item)
+
+
+## El residuo vuelve de un salto a su plataforma y se puede recoger otra vez.
+func _send_home(item: Interactable) -> void:
+	var back := create_tween().set_parallel()
+	back.tween_property(item, "position", item.get_meta("home"), 0.6).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
+	back.tween_property(item, "scale", Vector3.ONE * 1.5, 0.6)
+	back.tween_property(item, "rotation", Vector3.ZERO, 0.6)
+	await back.finished
+	item.set_enabled(true)
 
 
 func _finish() -> void:

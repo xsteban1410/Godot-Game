@@ -10,6 +10,7 @@ const PADS := [Vector3(-5.0, 2.4, -1.5), Vector3(-2.2, 3.4, -6.0), Vector3(2.4, 
 var _questions: Array = []  # [texto, respuesta]
 var _index := -1  # -1: ronda sin empezar
 var _mistakes := 0
+var _failed := {}  # plataformas ya falladas en esta pregunta: recaer en una no suma otro error
 var _right := 0  # plataforma con la respuesta correcta
 var _last := -1  # plataforma donde está el jugador: la siguiente respuesta nunca cae ahí
 var _busy := false
@@ -96,6 +97,7 @@ static func distractors(answer: int) -> Array:
 
 func _show_question() -> void:
 	var q: Array = _questions[_index]
+	_failed.clear()
 	var answers := [q[1]] + distractors(q[1])
 	answers.shuffle()
 	_right = answers.find(q[1])
@@ -119,7 +121,9 @@ func _on_land(body: Node3D, pad: int) -> void:
 	if _index < 0 or _busy:
 		return
 	if pad != _right:
-		_mistakes += 1
+		if not _failed.has(pad):
+			_failed[pad] = true
+			_mistakes += 1
 		Sfx.play("error")
 		Fx.shake(self, 0.3)
 		_rings[pad].material_override = Kit.mat(Game.RED, 3.0)
