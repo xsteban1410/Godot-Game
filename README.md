@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src=".github/screenshots/ciudad.jpg" alt="Vista aérea de Ciudad STEAM: la plaza con el holograma del STEAM LAB y los siete distritos de colores" width="100%">
+<img src=".github/screenshots/ciudad.jpg" alt="Vista aérea de Ciudad STEAM: la plaza con el holograma del STEAM LAB y los siete distritos, en tonos suaves" width="100%">
 
 # Ciudad STEAM
 
@@ -9,10 +9,10 @@ arma un cohete de agua con ellas y viaja a la Luna.**
 
 ![Godot 4.7](https://img.shields.io/badge/Godot-4.7-478CBF?logo=godotengine&logoColor=white)
 ![Windows y Linux](https://img.shields.io/badge/Windows%20%C2%B7%20Linux-listo%20para%20jugar-2ea44f)
-![Mando](https://img.shields.io/badge/mando-compatible-ff8c1a)
-![Versión 1.1](https://img.shields.io/badge/versi%C3%B3n-1.1-9b6bff)
+![Mando](https://img.shields.io/badge/mando-compatible-555555)
+![Versión 1.5](https://img.shields.io/badge/versi%C3%B3n-1.5-ff454e)
 
-[**Descargar**](../../releases/latest) · [Los retos](#los-retos) · [Controles](#controles) · [Desde el código](#desde-el-código)
+[**Descargar**](../../releases/latest) · [Los retos](#los-retos) · [Minimapa y objetivos](#minimapa-y-objetivos) · [Controles](#controles) · [Desde el código](#desde-el-código)
 
 </div>
 
@@ -20,7 +20,7 @@ arma un cohete de agua con ellas y viaja a la Luna.**
 
 ## La historia
 
-Llegas a una ciudad de juguete, de noche y llena de luces, con un STEAM LAB holográfico en el centro. Cada reto
+Llegas a una ciudad de noche, con un STEAM LAB holográfico en el centro. Cada reto
 que superas te da hasta tres estrellas, y cada estrella es una **pieza de un cohete de agua**. Con las doce piezas,
 llenas el cohete de agua, bombeas aire y despegas hacia la **Luna**. Allí no hay ríos ni lluvia, así que para
 volver tendrás que encontrar hielo en los cráteres, dar energía a la base y purificar el agua.
@@ -49,20 +49,45 @@ un certificado STEAM al completar el cohete y otro de astronauta al volver de la
 
 <table>
   <tr>
-    <td width="50%"><img src=".github/screenshots/cohete.jpg" alt="La plataforma de lanzamiento con el cohete de agua y su torre de andamios"></td>
-    <td width="50%"><img src=".github/screenshots/robotica.jpg" alt="El tablero del reto de Robótica con bloques de colores y un brazo robótico"></td>
+    <td width="50%"><img src=".github/screenshots/interfaz.jpg" alt="El jugador en la calle hacia el STEAM LAB, con el minimapa y la lista de objetivos a la derecha"></td>
+    <td width="50%"><img src=".github/screenshots/steamlab.jpg" alt="El menú del STEAM LAB: ocho tarjetas oscuras, una por reto, con un filete fino del color de cada uno"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Minimapa y objetivos siempre a la vista</sub></td>
+    <td align="center"><sub>El STEAM LAB te lleva a cualquier reto</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src=".github/screenshots/solar.jpg" alt="Una pregunta del reto de Energía solar con cuatro respuestas"></td>
+    <td width="50%"><img src=".github/screenshots/robotica.jpg" alt="El reto de Robótica: panel de programación y tablero con bloques"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Energía solar</sub></td>
+    <td align="center"><sub>Robótica</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src=".github/screenshots/cohete.jpg" alt="La plataforma de lanzamiento del cohete de agua, aún sin piezas"></td>
+    <td width="50%"><img src=".github/screenshots/luna.jpg" alt="La Luna: la base lunar con el cohete y las balizas hacia los retos"></td>
   </tr>
   <tr>
     <td align="center"><sub>La plataforma del cohete de agua</sub></td>
-    <td align="center"><sub>El reto de Robótica</sub></td>
-  </tr>
-  <tr>
-    <td colspan="2"><img src=".github/screenshots/luna.jpg" alt="La Luna: el cohete aterrizado, la base lunar y la Tierra en el cielo"></td>
-  </tr>
-  <tr>
-    <td colspan="2" align="center"><sub>La base lunar, con la Tierra en el cielo</sub></td>
+    <td align="center"><sub>La base lunar</sub></td>
   </tr>
 </table>
+
+## Minimapa y objetivos
+
+- Arriba a la derecha, un **minimapa** sigue al jugador (el triángulo blanco gira con la cámara). Muestra cada reto
+  con sus estrellas, el cohete, el STEAM LAB y las tuercas doradas que te faltan.
+- El **siguiente objetivo** de la historia lleva un anillo rojo; si está fuera del mapa, una flecha roja en el
+  borde te dice hacia dónde ir.
+- Debajo, la sección **OBJETIVO** explica qué toca hacer y lista los retos con sus estrellas, las piezas del
+  cohete y las tuercas.
+
+## Estilo
+
+Interfaz oscura y monocroma con un solo acento rojo (para el foco y el objetivo), bordes finos y movimiento corto,
+siguiendo un sistema de diseño propio inspirado en Nothing (no oficial). El mundo 3D usa tonos neutros y cada reto
+conserva un color propio discreto. Tipografías: Space Grotesk, Inter Tight, Space Mono y Doto.
 
 ## Controles
 
