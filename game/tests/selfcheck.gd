@@ -97,7 +97,7 @@ func _initialize() -> void:
 			sane = sane and q[1] > 0 and wrong.size() == 3 and not q[1] in wrong and wrong.all(func(w: int) -> bool: return w > 0 and wrong.count(w) == 1)
 	_check(sane, "las preguntas de mates tienen respuesta y 3 opciones falsas distintas")
 
-	# Fuente de símbolos: lo que Rubik no tiene (estrellas, flechas, ohmio) no depende de las fuentes del sistema.
+	# Fuente de símbolos: lo que Space Grotesk, Space Mono y Doto no tienen (estrellas, ohmio) no depende del sistema.
 	var symbols: FontFile = load("res://ui/fonts/Symbols.ttf")
 	_check(Array("★☆←↑→Ω".split("")).all(func(c: String) -> bool: return symbols.has_char(c.unicode_at(0))), "Symbols.ttf tiene ★ ☆ ← ↑ → Ω")
 

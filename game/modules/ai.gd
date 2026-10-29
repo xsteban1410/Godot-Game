@@ -67,7 +67,7 @@ func _on_cell(i: int) -> void:
 	if not _playing or _busy:
 		return
 	if _board[i] != 0:
-		Game.notify("Esa casilla ya está ocupada.", Game.GOLD)
+		Game.notify("Esa casilla ya está ocupada.", Game.WARNING)
 		return
 	_busy = true
 	_place(i, 1)
@@ -174,12 +174,12 @@ func _check_end() -> bool:
 		if _level < LEVELS.size() - 1:
 			_level += 1
 			text += " Siguiente nivel: " + LEVELS[_level]
-		Game.notify(text, Game.GREEN)
+		Game.notify(text, Game.SUCCESS)
 	else:
 		Sfx.play("error")
 		_nova_cheer()
 		_say(("¡NOVA gana!" if w == 2 else "¡Empate!") + "\nUsa el atril para la revancha")
-		Game.notify("Pista: amenaza dos rayas a la vez; NOVA solo puede tapar una." if _level == 1 else "¡Inténtalo otra vez!", Game.GOLD)
+		Game.notify("Pista: amenaza dos rayas a la vez; NOVA solo puede tapar una." if _level == 1 else "¡Inténtalo otra vez!", Game.WARNING)
 	await get_tree().create_timer(0.8).timeout
 	return true
 

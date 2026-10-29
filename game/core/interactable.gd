@@ -18,7 +18,7 @@ func _ready() -> void:
 	collision_layer = 1 << (LAYER - 1)
 	collision_mask = 0
 	monitoring = false
-	_marker = Kit.cylinder(self, 0.2, 0.0, 0.34, Vector3(0, marker_height, 0), Kit.mat(Game.GOLD, 3.0), 4)
+	_marker = Kit.cylinder(self, 0.2, 0.0, 0.34, Vector3(0, marker_height, 0), Kit.mat(Game.ACCENT, 3.0), 4)
 	_marker.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_marker.visible = false
 

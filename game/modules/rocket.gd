@@ -101,7 +101,7 @@ func _process(delta: float) -> void:
 			var green := _pressure >= GREEN_ZONE.x and _pressure <= GREEN_ZONE.y
 			_in_zone = _in_zone + delta if green else 0.0
 			_gauge.text = "PRESIÓN %d %%\nzona verde: 70–90 %%" % roundi(_pressure * 100)
-			_gauge.modulate = Color("1f9e4a") if green else Game.RED if _pressure > GREEN_ZONE.y else Color.WHITE
+			_gauge.modulate = Color("1f9e4a") if green else Game.DANGER if _pressure > GREEN_ZONE.y else Color.WHITE
 			_needle.rotation.z = lerpf(PI * 0.75, -PI * 0.75, minf(_pressure, 1.0))
 			if _in_zone > 1.0:
 				_launch()
@@ -132,16 +132,16 @@ func _set_water(level: float) -> void:
 func _on_pad() -> void:
 	if moon:
 		if Game.moon_done() < 4:
-			Game.notify("Necesitas agua para volver: completa los 4 retos lunares.", Game.GOLD)
+			Game.notify("Necesitas agua para volver: completa los 4 retos lunares.", Game.WARNING)
 		elif _stage == "":
 			_set_water(0.33)  # el agua purificada, en su punto ideal
-			Game.notify("En la Luna no hay aire que bombear: se presuriza con el oxígeno de la base.", Game.TEAL)
+			Game.notify("En la Luna no hay aire que bombear: se presuriza con el oxígeno de la base.", Game.INK)
 			_launch()
 		return
 	match _stage:
 		"":
 			if _count() < 12:
-				Game.notify("Cada estrella de los retos es una pieza del cohete.", Game.GOLD)
+				Game.notify("Cada estrella de los retos es una pieza del cohete.", Game.INK)
 				return
 			_stage = "water"
 			_set_water(0.0)
@@ -150,7 +150,7 @@ func _on_pad() -> void:
 			_stage = "pump"
 			_pressure = 0.0
 			_pad.prompt = "BOMBEAR AIRE (púlsalo varias veces)"
-			Game.notify("Agua: %d %%. Ahora bombea aire hasta la zona verde." % roundi(_water * 100), Game.TEXT)
+			Game.notify("Agua: %d %%. Ahora bombea aire hasta la zona verde." % roundi(_water * 100), Game.INK)
 		"pump":
 			_pressure += 0.11
 			Sfx.play("hop", 0.1)
@@ -162,7 +162,7 @@ func _on_pad() -> void:
 				Sfx.play("error")
 				Fx.burst(self, Vector3(0, BASE, 0), [Color.WHITE, Color("bfe6ff")], 30, 6.0, 0.15)
 				Fx.shake(self, 0.3)
-				Game.notify("¡Saltó la válvula de seguridad! Bombea con más calma.", Game.RED)
+				Game.notify("¡Saltó la válvula de seguridad! Bombea con más calma.", Game.DANGER)
 
 
 ## Cuenta atrás, el robot sube a la cabina y despega con el chorro de agua.
@@ -183,7 +183,8 @@ func _launch() -> void:
 	_camera.make_current()
 	_camera.look_at(_ship.global_position + Vector3(0, 4, 0))
 	for n in [3, 2, 1]:
-		var number := Kit.label(self, str(n), Vector3(0, 9, 3), 400, Game.GOLD, true, 0.01)
+		var number := Kit.label(self, str(n), Vector3(0, 9, 3), 400, Game.INK, true, 0.01)
+		number.font = UI.THEME.get_font("font", "Display")  # cuenta atrás en matriz de puntos
 		Sfx.play("click")
 		await create_tween().tween_property(number, "scale", Vector3.ONE * 0.2, 0.9).from(Vector3.ONE * 1.4).finished
 		number.queue_free()
@@ -196,7 +197,7 @@ func _launch() -> void:
 		await _fail_hop(jet, player, pilot)
 		return
 	Game.notify("Con 1/6 de gravedad el cohete pesa 6 veces menos: ¡sube mucho más fácil que en la Tierra!" if moon
-		else "¡El agua sale hacia abajo y el cohete sube! (tercera ley de Newton)", Game.GREEN)
+		else "¡El agua sale hacia abajo y el cohete sube! (tercera ley de Newton)", Game.SUCCESS)
 	var time := 3.0 if moon else 5.0
 	var climb := create_tween()
 	climb.tween_property(_ship, "position:y", 160.0, time).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
@@ -215,7 +216,7 @@ func _fail_hop(jet: CPUParticles3D, player: Node3D, pilot: Node3D) -> void:
 	jet.queue_free()
 	Sfx.play("error")
 	Game.notify("Con %d %% de agua no hay empuje suficiente." % roundi(_water * 100) if _water < GOOD_WATER.x
-		else "Con %d %% de agua pesa demasiado y queda poco aire para empujar." % roundi(_water * 100), Game.RED)
+		else "Con %d %% de agua pesa demasiado y queda poco aire para empujar." % roundi(_water * 100), Game.DANGER)
 	pilot.queue_free()
 	player.visible = true
 	_previous_camera.make_current()
@@ -260,7 +261,7 @@ func _return() -> void:
 	_previous_camera = get_viewport().get_camera_3d()
 	_camera.make_current()
 	var heat := Kit.sphere(_ship, 1.5, Vector3(0, BASE + 5.6, 0), Kit.mat(Color("ff3a1a"), 2.0, 0.0, 0.5), Vector3(1, 1.4, 1))
-	Game.notify("¡Reentrada! El aire frena el cohete y lo calienta al rojo.", Game.RED)
+	Game.notify("¡Reentrada! El aire frena el cohete y lo calienta al rojo.", Game.DANGER)
 	var fall := create_tween()
 	fall.tween_property(_ship, "position:y", 40.0, 2.5).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	fall.parallel().tween_property(_camera, "position", Vector3(10, 40, 26), 2.5).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
@@ -276,7 +277,7 @@ func _return() -> void:
 		var rope := Kit.cylinder(chute, 0.03, 0.03, edge.length(), edge / 2.0, Kit.mat(Color.WHITE), 6)
 		rope.basis = Basis(Quaternion(Vector3.UP, edge.normalized()))
 	Sfx.play("whoosh")
-	Game.notify("¡Se abre el paracaídas! (la pieza de Robótica ★3)", Game.GOLD)
+	Game.notify("¡Se abre el paracaídas! (la pieza de Robótica ★3)", Game.INK)
 	create_tween().tween_property(chute, "scale", Vector3.ONE, 0.5).from(Vector3.ONE * 0.1).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	create_tween().tween_property(_camera, "position", Vector3(10, 6, 26), 5.0).set_ease(Tween.EASE_OUT)
 	await create_tween().tween_property(_ship, "position:y", 0.0, 5.0).set_ease(Tween.EASE_OUT).finished
@@ -313,12 +314,12 @@ func _pump(at: Vector3) -> void:
 	Kit.cylinder(dial, 0.26, 0.26, 0.06, Vector3.ZERO, white, 24, Vector3(PI / 2, 0, 0))
 	for k in 5:  # arco verde de 70 % a 90 %
 		var a := lerpf(PI * 0.75, -PI * 0.75, lerpf(GREEN_ZONE.x, GREEN_ZONE.y, k / 4.0))
-		Kit.box(dial, Vector3(0.05, 0.08, 0.02), Vector3(-sin(a), cos(a), 0) * 0.19 + Vector3(0, 0, 0.04), Kit.mat(Game.GREEN, 1.0), Vector3(0, 0, a))
+		Kit.box(dial, Vector3(0.05, 0.08, 0.02), Vector3(-sin(a), cos(a), 0) * 0.19 + Vector3(0, 0, 0.04), Kit.mat(Game.SUCCESS, 1.0), Vector3(0, 0, a))
 	_needle = Node3D.new()
 	_needle.position = Vector3(0, 0, 0.05)
 	_needle.rotation.z = PI * 0.75
 	dial.add_child(_needle)
-	Kit.box(_needle, Vector3(0.025, 0.2, 0.015), Vector3(0, 0.09, 0), Kit.mat(Game.RED))
+	Kit.box(_needle, Vector3(0.025, 0.2, 0.015), Vector3(0, 0.09, 0), Kit.mat(Game.ACCENT))
 	Kit.bake(dial)
 	_hose(at + Vector3(0, 0.1, 0), Vector3(0.3, BASE - 0.2, 0.3), Color("2a3442"))
 
@@ -371,7 +372,7 @@ func _on_stars_changed(module: String, stars: int) -> void:
 		tween.tween_property(beam, "scale", Vector3(0.01, 1, 0.01), 1.2).set_delay(0.6)
 		tween.chain().tween_callback(beam.queue_free)
 		Fx.confetti(self, Vector3(0, BASE + 3, 0))
-		Game.notify("¡Nueva pieza para el cohete: %s! (%d / 12)" % [PARTS[module][i], _count()], Game.GOLD)
+		Game.notify("¡Nueva pieza para el cohete: %s! (%d / 12)" % [PARTS[module][i], _count()], Game.INK)
 	if module == "recycling" and _stage == "":
 		_set_water(0.2)
 	_refresh()
@@ -412,10 +413,10 @@ func _build(part: Node3D, module: String, i: int) -> void:
 			Kit.box(part, Vector3(0.45, 0.12, 0.42), Vector3(0, BASE + 2.45, 1.01), Kit.mat(Color("ffcc00"), 2.0))
 		"solar:2":
 			Kit.cylinder(part, 0.04, 0.04, 1.2, Vector3(0.3, BASE + 7.3, 0), white, 8)
-			Kit.sphere(part, 0.12, Vector3(0.3, BASE + 7.95, 0), Kit.mat(Game.RED, 4.0))
+			Kit.sphere(part, 0.12, Vector3(0.3, BASE + 7.95, 0), Kit.mat(Game.ACCENT, 4.0))
 		"robotics:0":
 			Kit.box(part, Vector3(0.8, 0.6, 0.2), Vector3(0, BASE + 3.9, -0.95), Kit.mat(Color("2a3442")))
-			Kit.box(part, Vector3(0.6, 0.35, 0.05), Vector3(0, BASE + 3.95, -1.06), Kit.mat(Game.TEAL, 3.0))
+			Kit.box(part, Vector3(0.6, 0.35, 0.05), Vector3(0, BASE + 3.95, -1.06), Kit.mat(Game.INK_2, 3.0))
 		"robotics:1":
 			_gyro = Node3D.new()
 			_gyro.position = Vector3(0, BASE + 1.6, -1.0)

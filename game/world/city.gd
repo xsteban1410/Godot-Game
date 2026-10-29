@@ -100,7 +100,7 @@ func _ready() -> void:
 	_bolts()
 	if not _welcomed:  # la bienvenida, una vez por sesión (no al volver de la Luna)
 		_welcomed = true
-		get_tree().create_timer(2.0).timeout.connect(Game.notify.bind(WELCOME, Game.GOLD))
+		get_tree().create_timer(2.0).timeout.connect(Game.notify.bind(WELCOME, Game.INK))
 	$SteamLab.travel_requested.connect(_travel_to_district)
 	Game.stars_changed.connect(_on_stars_changed)
 
@@ -134,7 +134,7 @@ func _district(id: String) -> void:
 	arch.transform = gate(id)
 	add_child(arch)
 	Kit.label(arch, String(info.name).to_upper(), Vector3(0, 6.2, 0), 110, Color.WHITE, false, 0.01)
-	_star_labels[id] = Kit.label(arch, "", Vector3(0, 7.4, 0), 120, Game.GOLD, false, 0.01)
+	_star_labels[id] = Kit.label(arch, "", Vector3(0, 7.4, 0), 120, Game.INK, false, 0.01)
 	_show_stars(id)
 	var module: Node3D = MODULE_SCRIPTS[id].new()
 	module.transform = Transform3D(Basis.looking_at(center.normalized()), center)

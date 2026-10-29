@@ -2,7 +2,7 @@ class_name Kit
 ## Fábrica de mallas, materiales y textos 3D procedurales, compartida por todo el juego.
 ## En Unity, cada script tenía su propio CreatePrimitive/CreateMaterial; aquí hay uno solo con caché.
 
-const TITLE_FONT := preload("res://ui/fonts/Rubik-ExtraBold.ttf")
+const TITLE_FONT := preload("res://ui/fonts/SpaceGrotesk-SemiBold.otf")
 const TOY_SHADER := preload("res://core/toy.gdshader")
 
 const MOON_ROCK := {"rock": Color("9a9ea6"), "rockDark": Color("7f838b"), "rockTrack": Color("858991")}  # rocas de Kenney en gris lunar
@@ -368,7 +368,7 @@ static func label(parent: Node3D, text: String, pos: Vector3, font_size: int, co
 	node.pixel_size = pixel
 	node.modulate = color
 	node.outline_size = int(font_size / 6.0)
-	node.outline_modulate = Color(0.02, 0.04, 0.08, 0.85)
+	node.outline_modulate = Color("090909", 0.85)  # Game.BG (Kit también corre en tools/, sin autoloads)
 	node.position = pos
 	if billboard:
 		node.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y

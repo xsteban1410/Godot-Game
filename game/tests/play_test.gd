@@ -336,7 +336,7 @@ func _run() -> void:
 	for i in 30:  # las 4 celebraciones salen en fila (~3,3 s cada una) y después el certificado
 		await _frames(60)
 		certificate = current_scene.get_node("HUD").find_children("*", "Label", true, false).filter(
-			func(l: Label) -> bool: return l.text == "CERTIFICADO STEAM")
+			func(l: Label) -> bool: return l.text == "Certificado STEAM")
 		if not certificate.is_empty():
 			break
 	_check(not certificate.is_empty(), "con las 12 estrellas aparece el certificado")
@@ -454,7 +454,7 @@ func _run() -> void:
 	_check(home.visible and not _game.is_locked() and home.gravity > 10.0, "tras el paracaídas se juega en la Tierra con gravedad normal")
 	_check("tuercas doradas" in current_scene.get_node("HUD").objective(false), "de vuelta en casa, el objetivo es completarlo todo")
 	_check(not current_scene.get_node("HUD").find_children("*", "Label", true, false).filter(
-		func(l: Label) -> bool: return l.text == "CERTIFICADO DE ASTRONAUTA STEAM").is_empty(), "al aterrizar aparece el certificado de astronauta")
+		func(l: Label) -> bool: return l.text == "Certificado de astronauta STEAM").is_empty(), "al aterrizar aparece el certificado de astronauta")
 	await _frames(700)
 	_check(not current_scene.get_node("HUD").find_children("*", "Label", true, false).filter(
 		func(l: Label) -> bool: return l.text == "¡Gracias por jugar!").is_empty(), "tras el certificado salen los créditos")

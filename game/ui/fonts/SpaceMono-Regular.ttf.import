@@ -2,13 +2,13 @@
 
 importer="font_data_dynamic"
 type="FontFile"
-uid="uid://ditejaen1k4id"
-path="res://.godot/imported/Rubik-Medium.ttf-78732f99a59aeb0044dac95af7b8656a.fontdata"
+uid="uid://d1i3xdabdxkxa"
+path="res://.godot/imported/SpaceMono-Regular.ttf-abe341acf2fcfd560212a0478956b3a6.fontdata"
 
 [deps]
 
-source_file="res://ui/fonts/Rubik-Medium.ttf"
-dest_files=["res://.godot/imported/Rubik-Medium.ttf-78732f99a59aeb0044dac95af7b8656a.fontdata"]
+source_file="res://ui/fonts/SpaceMono-Regular.ttf"
+dest_files=["res://.godot/imported/SpaceMono-Regular.ttf-abe341acf2fcfd560212a0478956b3a6.fontdata"]
 
 [params]
 

@@ -93,7 +93,7 @@ func start() -> void:
 
 func _pickup(item: Interactable) -> void:
 	if _carried:
-		Game.notify("Ya llevas un residuo: lánzalo a una caneca.", Game.GOLD)
+		Game.notify("Ya llevas un residuo: lánzalo a una caneca.", Game.WARNING)
 	if _busy or _carried:
 		return
 	_carried = item
@@ -112,7 +112,7 @@ func _throw(id: String) -> void:
 	if _busy:
 		return
 	if not _carried:
-		Game.notify("Primero recoge un residuo con E.", Game.GOLD)
+		Game.notify("Primero recoge un residuo con E.", Game.WARNING)
 		return
 	_busy = true
 	var item := _carried
@@ -139,13 +139,13 @@ func _throw(id: String) -> void:
 		flap.tween_property(lid, "rotation:x", 0.0, 0.5).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
 		Fx.confetti(self, target + Vector3(0, 0.5, 0))
 		Sfx.play("success")
-		Game.notify("¡Bien! %s → %s." % [data[0], id], Game.GREEN)
+		Game.notify("¡Bien! %s → %s." % [data[0], id], Game.SUCCESS)
 	else:
 		_mistakes += 1
 		Sfx.play("error")
 		Fx.burst(self, target, [Color("ff5d5d"), Color("5a6b7d"), Color("2a2f38")], 30, 5.0, 0.2)
 		Fx.shake(self, 0.3)
-		Game.notify("¡No va en la %s! %s" % [id, data[2]], Game.RED)
+		Game.notify("¡No va en la %s! %s" % [id, data[2]], Game.DANGER)
 		await _send_home(item)
 	_busy = false
 	_refresh()
@@ -159,7 +159,7 @@ func _process(_delta: float) -> void:
 		var item := _carried
 		_carried = null
 		item.reparent(self)
-		Game.notify("El residuo vuelve a su sitio: recíclalo sin salir del reto.", Game.GOLD)
+		Game.notify("El residuo vuelve a su sitio: recíclalo sin salir del reto.", Game.WARNING)
 		_refresh()
 		_send_home(item)
 

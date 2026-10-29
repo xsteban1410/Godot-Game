@@ -54,7 +54,7 @@ func _new_grid() -> void:
 	var source := _pos(_start) + Vector3(-TILE * 1.3, 0, 0)
 	for k in 3:
 		Kit.box(_grid, Vector3(1.0, 0.06, 1.5), source + Vector3(-k * 1.1, 1.0, 0), Kit.mat(Color("1d3f8f"), 0.3, 0.6, 0.08), Vector3(0, 0, 0.5))
-	Kit.box(_grid, Vector3(0.3, 0.12, TILE * 0.5), _pos(_start) + Vector3(-TILE * 0.75, 0.12, 0), Kit.mat(Game.GOLD, 3.0), Vector3(0, PI / 2, 0))
+	Kit.box(_grid, Vector3(0.3, 0.12, TILE * 0.5), _pos(_start) + Vector3(-TILE * 0.75, 0.12, 0), Kit.mat(Game.WARNING, 3.0), Vector3(0, PI / 2, 0))
 	var target := _pos(_end) + Vector3(TILE * 1.4, 0, 0)
 	Kit.cylinder(_grid, 0.9, 1.0, 1.8, target + Vector3(0, 0.9, 0), Kit.mat(Color("f4f7fb")), 24)
 	_melter = Kit.cylinder(_grid, 0.55, 0.55, 1.0, target + Vector3(0, 1.3, 0.0), Kit.mat(Color(0.6, 0.95, 1.0, 0.8), 0.5, 0.0, 0.05), 6)
@@ -140,7 +140,7 @@ func _lit() -> Dictionary:
 func _refresh() -> void:
 	var lit := _lit()
 	for cell: Vector2i in _tiles:
-		_tiles[cell].cable.material_override = Kit.mat(Game.GOLD, 3.0) if lit.has(cell) else _wire
+		_tiles[cell].cable.material_override = Kit.mat(Game.WARNING, 3.0) if lit.has(cell) else _wire
 	if lit.has(_end) and 1 in _sides(_end):
 		_solved()
 
@@ -151,7 +151,7 @@ func _solved() -> void:
 	Sfx.play("success")
 	Fx.confetti(self, _melter.position + Vector3(0, 1, 0))
 	Game.set_stars("moon_power", _level + 1)
-	Game.notify("¡Energía! En la Luna no hay nubes: los paneles solares reciben luz todo el día lunar.", Game.GOLD)
+	Game.notify("¡Energía! En la Luna no hay nubes: los paneles solares reciben luz todo el día lunar.", Game.INK)
 	await get_tree().create_timer(2.0).timeout
 	_level = mini(_level + 1, LEVELS.size() - 1)  # tras el último nivel, otro tablero igual (antes se quedaba resuelto y repetía el premio)
 	_new_grid()

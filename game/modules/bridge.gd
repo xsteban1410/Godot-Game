@@ -47,7 +47,7 @@ func _ready() -> void:
 	Kit.cylinder(self, 0.5, 0.6, 1.0, Vector3(4.2, 0.5, 3.6), Kit.mat(Color("f4f7fb")), 24)
 	Kit.sphere(self, 0.42, Vector3(4.2, 1.0, 3.6), Kit.mat(Color("ff3b3b"), 0.6), Vector3(1, 0.6, 1))
 	Kit.collider(self, Vector3(1.2, 1.2, 1.2), Vector3(4.2, 0.6, 3.6))
-	Kit.label(self, "PROBAR", Vector3(4.2, 0.55, 4.18), 40, Game.RED, false, 0.008)
+	Kit.label(self, "PROBAR", Vector3(4.2, 0.55, 4.18), 40, Game.ACCENT, false, 0.008)
 	Kit.interactable(self, "PROBAR EL PUENTE", Vector3(4.2, 1.0, 3.6), 1.6).interacted.connect(_test)
 	Kit.bake(self)
 	_build_truck()
@@ -89,10 +89,10 @@ func _test() -> void:
 		return
 	var level: Array = LEVELS[_level]
 	if -1 in _slots:
-		Game.notify("Faltan tramos: el puente necesita los 5.", Game.RED)
+		Game.notify("Faltan tramos: el puente necesita los 5.", Game.DANGER)
 		return
 	if cost() > level[2]:
-		Game.notify("Te pasas del presupuesto: %d de %d CR." % [cost(), level[2]], Game.RED)
+		Game.notify("Te pasas del presupuesto: %d de %d CR." % [cost(), level[2]], Game.DANGER)
 		return
 	_testing = true
 	for i in SLOT_Z.size():
@@ -111,10 +111,10 @@ func _test() -> void:
 	Game.set_stars("bridge", _level + 1)
 	if _level < LEVELS.size() - 1:
 		_level += 1
-		Game.notify("¡Puente superado! Ahora prueba con un %s de %d t." % [LEVELS[_level][0], LEVELS[_level][1]], Game.GREEN)
+		Game.notify("¡Puente superado! Ahora prueba con un %s de %d t." % [LEVELS[_level][0], LEVELS[_level][1]], Game.SUCCESS)
 		_build_truck()
 	else:
-		Game.notify("¡Superaste los 3 niveles! Eres ingeniero de Ciudad STEAM.", Game.GREEN)
+		Game.notify("¡Superaste los 3 niveles! Eres ingeniero de Ciudad STEAM.", Game.SUCCESS)
 		_truck.position = START
 	_testing = false
 	_refresh()
@@ -129,7 +129,7 @@ func _collapse(i: int, need: float) -> void:
 	var material: Array = MATERIALS[_slots[i]]
 	Sfx.play("boom")
 	Fx.shake(self, 0.7)
-	Game.notify("El tramo %d necesitaba %s t y la %s aguanta %d t." % [i + 1, String.num(need), material[0].to_lower(), material[2]], Game.RED)
+	Game.notify("El tramo %d necesitaba %s t y la %s aguanta %d t." % [i + 1, String.num(need), material[0].to_lower(), material[2]], Game.DANGER)
 	Fx.burst(self, Vector3(0, 1.0, SLOT_Z[i]), [material[3], material[3].darkened(0.3), Color.WHITE], 40, 8.0, 0.18)
 	Fx.shatter(_pieces[i], Vector3(3.4, 0.24, 1.46), Kit.mat(material[3]), Vector3(0, 2, 0))
 	_pieces[i] = null

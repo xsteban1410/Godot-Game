@@ -131,6 +131,6 @@ game/
 - Basado en el juego de Unity «Ciudad STEAM», llevado a Godot y ampliado con la Misión Lunar.
 - Modelos 3D de [Kenney](https://kenney.nl) y el robot animado de [Quaternius](https://quaternius.com), todos
   de dominio público (CC0).
-- Fuentes Rubik e Inter, con licencia SIL Open Font License.
+- Fuentes Space Grotesk, Inter Tight, Space Mono, Doto e Inter, con licencia SIL Open Font License.
 
 El detalle de cada recurso y su licencia está en [`game/models/CREDITS.md`](game/models/CREDITS.md).

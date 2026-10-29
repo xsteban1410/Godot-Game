@@ -25,7 +25,7 @@ func _ready() -> void:
 	add_child(shape)
 	var nut := Node3D.new()
 	add_child(nut)
-	Kit.cylinder(nut, 0.36, 0.36, 0.16, Vector3.ZERO, Kit.mat(Game.GOLD, 1.2, 0.8, 0.2), 6, Vector3(PI / 2, 0, 0))
+	Kit.cylinder(nut, 0.36, 0.36, 0.16, Vector3.ZERO, Kit.mat(Game.WARNING, 1.2, 0.8, 0.2), 6, Vector3(PI / 2, 0, 0))
 	Kit.cylinder(nut, 0.15, 0.15, 0.18, Vector3.ZERO, Kit.mat(Color("6b4a10"), 0.0, 0.6, 0.3), 12, Vector3(PI / 2, 0, 0))
 	Kit.bake(nut)  # una sola malla: un draw call por tuerca
 	nut.create_tween().set_loops().tween_property(nut, "rotation:y", TAU, 1.6).from(0.0)
@@ -40,6 +40,6 @@ func _on_body_entered(body: Node3D) -> void:
 		return
 	Game.collect_bolt(id)
 	Sfx.play("pickup", 0.05)
-	Fx.burst(get_parent(), position, [Game.GOLD, Color.WHITE, Color("ffe08a")], 30, 5.0, 0.12)
-	Game.notify("¡Tuerca dorada! %d / %d" % [Game.bolts.size(), Game.BOLTS_TOTAL], Game.GOLD)
+	Fx.burst(get_parent(), position, [Game.WARNING, Color.WHITE, Color("ffe08a")], 30, 5.0, 0.12)
+	Game.notify("¡Tuerca dorada! %d / %d" % [Game.bolts.size(), Game.BOLTS_TOTAL], Game.WARNING)
 	queue_free()

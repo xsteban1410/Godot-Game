@@ -40,7 +40,7 @@ static func overlay(layer: CanvasLayer, dim := 0.6) -> CenterContainer:
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	layer.add_child(root)
 	var shade := ColorRect.new()
-	shade.color = Color(0.01, 0.02, 0.05, dim)
+	shade.color = Color(Game.BG, dim)
 	shade.set_anchors_preset(Control.PRESET_FULL_RECT)
 	root.add_child(shade)
 	var center := CenterContainer.new()
@@ -57,14 +57,16 @@ static func clear(node: Node) -> void:
 		child.queue_free()
 
 
-## Entrada con rebote: el panel crece desde el 80 % con un pequeño exceso.
-static func pop(control: Control) -> void:
-	control.pivot_offset = control.get_combined_minimum_size() / 2.0
-	control.scale = Vector2.ONE * 0.8
+## Entrada sobria (DESING): aparece y sube 8 px, ease-out, sin rebote. `duration`: 0,18 s; 0,28 en celebraciones.
+## Espera un fotograma a que su contenedor lo coloque: si no, el desplazamiento partiría de (0, 0).
+static func pop(control: Control, duration := 0.18) -> void:
 	control.modulate.a = 0.0
-	var tween := control.create_tween().set_parallel()
-	tween.tween_property(control, "scale", Vector2.ONE, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tween.tween_property(control, "modulate:a", 1.0, 0.15)
+	await control.get_tree().process_frame
+	if not is_instance_valid(control):
+		return
+	var tween := control.create_tween().set_parallel().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(control, "modulate:a", 1.0, duration)
+	tween.tween_property(control, "position:y", control.position.y, duration).from(control.position.y + 8.0)
 
 
 ## El HUD nunca debe tragarse el ratón: con el cursor capturado está fijo en el centro de la pantalla

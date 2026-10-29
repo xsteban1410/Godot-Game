@@ -7,12 +7,19 @@ signal toast(text: String, color: Color)
 signal prompt_changed(text: String)
 signal bolts_changed(count: int)
 
-const NAVY := Color("09131f")
-const TEAL := Color("1fd1c6")
-const GOLD := Color("ffb84d")
-const TEXT := Color("e0f0f5")
-const GREEN := Color("5be37d")
-const RED := Color("ff5d5d")
+# Paleta de la interfaz (DESING/tokens.css, tema oscuro): monocroma, un solo acento rojo para foco y objetivo.
+const BG := Color("090909")
+const SURFACE := Color("141414")
+const SURFACE_2 := Color("202020")
+const INK := Color("f5f5f5")
+const INK_2 := Color("d0d0d0")
+const MUTED := Color("a0a0a0")
+const LINE := Color("303030")
+const LINE_STRONG := Color("555555")
+const ACCENT := Color("ff454e")
+const SUCCESS := Color("83d6a8")
+const WARNING := Color("f0c36a")
+const DANGER := Color("ff858a")
 
 const MOON_MODULES := {
 	"moon_jump": {"name": "Salto lunar", "color": Color("2ec4ff")},
@@ -33,7 +40,7 @@ const LAB_MODULES := {  # retos extra del STEAM LAB: no son piezas del cohete
 }
 
 const BOLTS_TOTAL := 32  # tuercas doradas: 22 en la ciudad y 10 en la Luna (play_test lo comprueba)
-const SYMBOLS := preload("res://ui/fonts/Symbols.ttf")  # ★ ☆ ← ↑ → Ω, que Rubik no tiene
+const SYMBOLS := preload("res://ui/fonts/Symbols.ttf")  # ★ ☆ ← ↑ → Ω, que Space Grotesk, Space Mono y Doto no tienen
 
 var save_path := "user://save.cfg"
 var arriving := false  # true mientras el cohete viaja: la escena de destino reproduce el aterrizaje
@@ -48,7 +55,8 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_register_inputs()
 	# Sin esto, los símbolos dependían de las fuentes del sistema (bajo Wine, «●» salía como un cuadro).
-	for font: FontFile in [preload("res://ui/fonts/Rubik-Medium.ttf"), preload("res://ui/fonts/Rubik-ExtraBold.ttf")]:
+	for font: FontFile in [preload("res://ui/fonts/InterTight.ttf"), preload("res://ui/fonts/SpaceGrotesk-SemiBold.otf"),
+			preload("res://ui/fonts/SpaceMono-Regular.ttf"), preload("res://ui/fonts/Doto.ttf")]:
 		font.fallbacks = [SYMBOLS]
 	var cfg := ConfigFile.new()
 	if cfg.load(save_path) == OK:
@@ -58,7 +66,7 @@ func _ready() -> void:
 	var layer := CanvasLayer.new()
 	layer.layer = 100
 	add_child(layer)
-	_fade.color = Color(0.85, 0.95, 1.0, 0.0)
+	_fade.color = Color(BG, 0.0)
 	_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_fade.set_anchors_preset(Control.PRESET_FULL_RECT)
 	layer.add_child(_fade)
@@ -132,7 +140,7 @@ func set_prompt(text: String) -> void:
 	prompt_changed.emit(text)
 
 
-func notify(text: String, color := TEXT) -> void:
+func notify(text: String, color := INK) -> void:
 	if not text.is_empty():
 		toast.emit(text, color)
 

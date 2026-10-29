@@ -98,4 +98,4 @@ func play(anim: String, blend := 0.15, speed := 1.0) -> void:
 func set_fuel(fraction: float, low: bool) -> void:
 	if _gauge:
 		_gauge.set_shader_parameter("fill", fraction)
-		_gauge.set_shader_parameter("color", Game.RED if low else _eyes)
+		_gauge.set_shader_parameter("color", Game.ACCENT if low else _eyes)

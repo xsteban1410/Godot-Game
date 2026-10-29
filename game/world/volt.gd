@@ -13,7 +13,7 @@ var _player: Node3D
 
 
 func _ready() -> void:
-	_robot = RobotModel.create(self, accent, Game.TEAL)
+	_robot = RobotModel.create(self, accent, Game.INK_2)
 	_player = get_tree().get_first_node_in_group("player")
 
 

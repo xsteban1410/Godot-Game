@@ -1,7 +1,7 @@
 extends SceneTree
 ## Captura a 1920×1080, la resolución de diseño, aunque el gestor de ventanas encoja la ventana:
 ##   godot --path game --script res://tools/shot.gd -- res://world/moon.tscn x,y,z(cámara) x,y,z(mira) salida.png [segundos]
-##   godot --path game --script res://tools/shot.gd -- res://world/city.tscn jugador x,y,z,yaw_grados salida.png [segundos]
+##   godot --path game --script res://tools/shot.gd -- res://world/city.tscn jugador x,y,z,yaw_grados salida.png [segundos] [script.gd:método]
 ## (La primera es una vista limpia, sin interfaz; la segunda coloca al jugador y usa su cámara, con la interfaz.)
 
 
@@ -35,6 +35,11 @@ func _run() -> void:
 		var to := args[2].split_floats(",")
 		camera.fov = 55.0  # menos deformación en los bordes que con los 75° del juego
 		camera.look_at_from_position(Vector3(from[0], from[1], from[2]), Vector3(to[0], to[1], to[2]))
+	if args.size() > 5:  # «script.gd:método»: abre un panel antes de capturar, p. ej. steam_lab_menu.gd:open
+		var spec := args[5].split(":")
+		var target := current_scene.find_children("*", "", true, false).filter(func(n: Node) -> bool:
+			return n.get_script() and n.get_script().resource_path.ends_with("/" + spec[0]))
+		target[0].call(spec[1])
 	var seconds := float(args[4]) if args.size() > 4 else 1.5
 	var end := Time.get_ticks_msec() + int(seconds * 1000.0)
 	while Time.get_ticks_msec() < end:

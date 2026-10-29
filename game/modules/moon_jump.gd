@@ -57,4 +57,4 @@ func _collect(body: Node3D, area: Area3D, index: int) -> void:
 	area.queue_free()
 	_crystals.erase(area)
 	Game.collect_ice(index)
-	Game.notify("¡Hielo! %d / 3. En los cráteres donde nunca da el Sol, el agua sigue congelada." % Game.ice.size(), Color("bfe6ff"))
+	Game.notify("¡Hielo! %d / 3. En los cráteres donde nunca da el Sol, el agua sigue congelada." % Game.ice.size(), Game.INK)

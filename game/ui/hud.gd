@@ -6,10 +6,14 @@ var _objective: Label
 var _prompt: PanelContainer
 var _prompt_label: Label
 var _key: Label  # tecla del aviso: E con teclado, X con mando
+var _controls: Label  # línea de controles del último control usado
 var _toasts: VBoxContainer
 var _celebration := CanvasLayer.new()
 var _shout_until := 0.0  # hasta cuándo (s de reloj) ocupa la pantalla el último rótulo de _shout
 @export var moon := false  # en la Luna se listan los retos lunares
+
+const KEYBOARD := "WASD MOVER  ·  RATÓN CÁMARA  ·  SHIFT CORRER  ·  ESPACIO SALTAR (EN EL AIRE: JETPACK)  ·  E USAR  ·  RUEDA ZOOM"
+const GAMEPAD := "STICK IZQ. MOVER  ·  STICK DER. CÁMARA  ·  RB CORRER  ·  A SALTAR (EN EL AIRE: JETPACK)  ·  X USAR  ·  B CERRAR"
 
 
 func _ready() -> void:
@@ -31,7 +35,7 @@ func _ready() -> void:
 	objective_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL | Control.SIZE_SHRINK_BEGIN
 	var objective_column := VBoxContainer.new()
 	objective_panel.add_child(objective_column)
-	objective_column.add_child(UI.label("SIGUIENTE", "Caption", Game.GOLD))
+	objective_column.add_child(UI.label("SIGUIENTE", "Caption", Game.ACCENT))
 	_objective = UI.label("")
 	_objective.custom_minimum_size.x = 420
 	_objective.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -55,13 +59,17 @@ func _ready() -> void:
 	_prompt.add_child(row)
 	var key := PanelContainer.new()
 	key.theme_type_variation = &"KeyCap"
-	_key = UI.label("E", "Title", Game.NAVY)
+	_key = UI.label("E", "Mono", Game.INK)
 	key.add_child(_key)
 	row.add_child(key)
 	_prompt_label = UI.label("")
 	row.add_child(_prompt_label)
 	column.add_child(_prompt)
-	column.add_child(UI.label("WASD mover  ·  RATÓN cámara  ·  SHIFT correr  ·  ESPACIO saltar (otra vez en el aire: JETPACK)  ·  E interactuar  ·  RUEDA zoom  ·  MANDO: A saltar, X usar", "Caption"))
+	var controls := PanelContainer.new()  # sobre el suelo claro, el texto pequeño necesita su panel
+	controls.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_controls = UI.label(KEYBOARD, "Caption")
+	controls.add_child(_controls)
+	column.add_child(controls)
 
 	_celebration.layer = 50  # por encima de los paneles de los retos
 	add_child(_celebration)
@@ -73,12 +81,14 @@ func _ready() -> void:
 	UI.ignore_mouse(margin)
 
 
-## El aviso muestra la tecla del último control usado (el movimiento del ratón no cuenta: haría parpadear).
+## El aviso y la línea de controles siguen al último control usado (el movimiento del ratón no cuenta: haría parpadear).
 func _input(event: InputEvent) -> void:
 	if event is InputEventJoypadButton or event is InputEventJoypadMotion and absf(event.axis_value) > 0.5:
 		_key.text = "X"
+		_controls.text = GAMEPAD
 	elif event is InputEventKey or event is InputEventMouseButton:
 		_key.text = "E"
+		_controls.text = KEYBOARD
 
 
 func _on_prompt_changed(text: String) -> void:
@@ -92,9 +102,9 @@ func _refresh_missions() -> void:
 		_mission_list("MISIONES LUNARES", Game.MOON_MODULES)
 	else:
 		_mission_list("MISIONES", Game.MODULES)
-		_missions.add_child(UI.label("COHETE  ·  %d / 12 piezas" % Game.total_stars(), "Caption", Game.GOLD))
+		_missions.add_child(UI.label("COHETE  ·  %02d / 12 PIEZAS" % Game.total_stars(), "Caption"))
 		_mission_list("LABORATORIO", Game.LAB_MODULES)
-	_missions.add_child(UI.label("TUERCAS DORADAS  ·  %d / %d" % [Game.bolts.size(), Game.BOLTS_TOTAL], "Caption", Game.GOLD))
+	_missions.add_child(UI.label("TUERCAS  ·  %02d / %d" % [Game.bolts.size(), Game.BOLTS_TOTAL], "Caption"))
 	UI.ignore_mouse(_missions)
 	_objective.text = objective(moon)
 
@@ -116,19 +126,19 @@ static func objective(on_moon: bool) -> String:
 func _on_bolts_changed(_count: int) -> void:
 	_refresh_missions()
 	if Game.golden():
-		_shout("¡TRAJE DORADO!", Game.GOLD, "Encontraste las %d tuercas" % Game.BOLTS_TOTAL)
+		_shout("¡TRAJE DORADO!", Game.INK, "Encontraste las %d tuercas" % Game.BOLTS_TOTAL)
 
 
 func _mission_list(title: String, modules: Dictionary) -> void:
-	_missions.add_child(UI.label("%s  ·  ★ %d / %d" % [title, Game.total_stars(modules), modules.size() * 3], "Caption", Game.TEAL))
+	_missions.add_child(UI.label("%s  ·  ★ %02d / %d" % [title, Game.total_stars(modules), modules.size() * 3], "Caption"))
 	for id: String in modules:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 10)
-		row.add_child(UI.label("•", "Title", modules[id].color))  # «●» no está en Rubik: en Windows salía un cuadro
+		row.add_child(UI.label("•", "Title", modules[id].color))  # el color discreto del reto
 		var label := UI.label(modules[id].name)
 		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(label)
-		row.add_child(UI.label(UI.stars(int(Game.stars.get(id, 0))), "", Game.GOLD))
+		row.add_child(UI.label(UI.stars(int(Game.stars.get(id, 0))), "", Game.INK))
 		_missions.add_child(row)
 
 
@@ -160,16 +170,16 @@ func _shout(text: String, color: Color, subtitle := "") -> VBoxContainer:
 	center.add_child(column)
 	var title := UI.label(text, "Title", color)
 	title.add_theme_font_size_override("font_size", 64)
-	title.add_theme_constant_override("outline_size", 16)
+	title.add_theme_constant_override("outline_size", 10)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(title)
 	if subtitle:
-		var sub := UI.label(subtitle, "Title", Game.TEXT)
-		sub.add_theme_constant_override("outline_size", 12)
+		var sub := UI.label(subtitle, "Title", Game.INK_2)
+		sub.add_theme_constant_override("outline_size", 8)
 		sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		column.add_child(sub)
 	UI.ignore_mouse(center)
-	UI.pop(title)
+	UI.pop(title, 0.28)
 	var out := center.create_tween()
 	out.tween_interval(2.8)
 	out.tween_property(center, "modulate:a", 0.0, 0.5)
@@ -177,7 +187,7 @@ func _shout(text: String, color: Color, subtitle := "") -> VBoxContainer:
 	return column
 
 
-## Celebración: nombre del reto y estrellas que aparecen una a una con rebote.
+## Celebración: nombre del reto y estrellas que aparecen una a una.
 func _on_stars_changed(module: String, stars: int) -> void:
 	_refresh_missions()
 	var column: VBoxContainer = await _shout("¡%s!" % String(Game.info(module).name).to_upper(), Game.info(module).color)
@@ -185,15 +195,15 @@ func _on_stars_changed(module: String, stars: int) -> void:
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	column.add_child(row)
 	for i in 3:
-		var star := UI.label("★" if i < stars else "☆", "Title", Game.GOLD)
+		var star := UI.label("★" if i < stars else "☆", "Title", Game.INK if i < stars else Game.LINE_STRONG)
 		star.add_theme_font_size_override("font_size", 150)
-		star.add_theme_constant_override("outline_size", 20)
+		star.add_theme_constant_override("outline_size", 10)
 		row.add_child(star)
 		star.modulate.a = 0.0
 		var tween := star.create_tween()
 		tween.tween_interval(0.25 + i * 0.25)
 		tween.tween_callback(func() -> void:
-			UI.pop(star)
+			UI.pop(star, 0.28)
 			if i < stars:
 				Sfx.play("pickup", 0.0))
 	if Game.MODULES.has(module) and Game.total_stars() == Game.MODULES.size() * 3:
@@ -212,19 +222,22 @@ func show_certificate(astronaut := false) -> void:
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation", 16)
 	panel.add_child(column)
-	var lines := [["CERTIFICADO STEAM", 72, Game.GOLD], ["★ 12 / 12", 56, Game.GOLD],
-			["Ciudad STEAM reconoce a este explorador por completar\nEnergía solar, Ingeniería, Robótica y Reciclaje.", 30, Game.TEXT]]
+	# [texto, tamaño, color, variación]: el número en matriz de puntos (Doto) es el único motivo expresivo.
+	var lines := [["CIUDAD STEAM  ·  COHETE DE AGUA", 0, Game.MUTED, "Caption"], ["Certificado STEAM", 72, Game.INK, "Title"],
+			["12/12", 140, Game.INK, "Display"],
+			["Ciudad STEAM reconoce a este explorador por completar\nEnergía solar, Ingeniería, Robótica y Reciclaje.", 30, Game.INK_2, ""]]
 	if astronaut:
-		lines = [["CERTIFICADO DE ASTRONAUTA STEAM", 64, Game.GOLD],
-			["★ %d / 24" % (Game.total_stars() + Game.total_stars(Game.MOON_MODULES)), 56, Game.GOLD],
-			["Viajó a la Luna en un cohete de agua, encontró hielo, le dio energía\na la base, purificó el agua y volvió sano y salvo a casa.", 30, Game.TEXT]]
+		lines = [["CIUDAD STEAM  ·  MISIÓN LUNAR", 0, Game.MUTED, "Caption"], ["Certificado de astronauta STEAM", 64, Game.INK, "Title"],
+			["%d/24" % (Game.total_stars() + Game.total_stars(Game.MOON_MODULES)), 140, Game.INK, "Display"],
+			["Viajó a la Luna en un cohete de agua, encontró hielo, le dio energía\na la base, purificó el agua y volvió sano y salvo a casa.", 30, Game.INK_2, ""]]
 	for line: Array in lines:
-		var label := UI.label(line[0], "Title", line[2])
-		label.add_theme_font_size_override("font_size", line[1])
+		var label := UI.label(line[0], line[3], line[2])
+		if line[1]:
+			label.add_theme_font_size_override("font_size", line[1])
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		column.add_child(label)
 	UI.ignore_mouse(center)
-	UI.pop.call_deferred(panel)
+	UI.pop.call_deferred(panel, 0.28)
 	Sfx.play("success")
 	var out := center.create_tween()
 	out.tween_interval(8.0)
@@ -242,13 +255,13 @@ func _roll_credits() -> void:
 	column.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	column.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	_celebration.add_child(column)
-	for line: Array in [["CIUDAD STEAM · MISIÓN LUNAR", 64, Game.GOLD], ["", 30, Game.TEXT],
-			["Basado en el juego de Unity «Ciudad STEAM»", 32, Game.TEXT], ["Llevado a Godot 4.7 y ampliado con la Misión Lunar", 32, Game.TEXT],
-			["", 30, Game.TEXT], ["Ciencia · Tecnología · Ingeniería · Arte · Matemáticas", 32, Game.TEAL],
-			["", 30, Game.TEXT], ["¡Gracias por jugar!", 56, Game.GOLD]]:
+	for line: Array in [["CIUDAD STEAM · MISIÓN LUNAR", 64, Game.INK], ["", 30, Game.INK],
+			["Basado en el juego de Unity «Ciudad STEAM»", 32, Game.INK_2], ["Llevado a Godot 4.7 y ampliado con la Misión Lunar", 32, Game.INK_2],
+			["", 30, Game.INK], ["Ciencia · Tecnología · Ingeniería · Arte · Matemáticas", 32, Game.MUTED],
+			["", 30, Game.INK], ["¡Gracias por jugar!", 56, Game.INK]]:
 		var label := UI.label(line[0], "Title", line[2])
 		label.add_theme_font_size_override("font_size", line[1])
-		label.add_theme_constant_override("outline_size", 14)  # legible sobre el suelo claro
+		label.add_theme_constant_override("outline_size", 10)  # legible sobre el suelo claro
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		column.add_child(label)
 	UI.ignore_mouse(column)

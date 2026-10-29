@@ -46,7 +46,7 @@ func _add(material: String) -> void:
 	if _busy:
 		return
 	if material in _stack or _stack.size() == 3:
-		Game.notify("Esa capa ya está en el filtro." if material in _stack else "El filtro está lleno: vierte el agua.", Game.GOLD)
+		Game.notify("Esa capa ya está en el filtro." if material in _stack else "El filtro está lleno: vierte el agua.", Game.WARNING)
 		return
 	_stack.append(material)
 	var target := COLUMN.y + 0.4 + _stack.size() * 0.8  # apoyada sobre la base o sobre la capa anterior
@@ -60,7 +60,7 @@ func _pour() -> void:
 	if _busy:
 		return
 	if _stack.size() < 3:
-		Game.notify("Faltan capas: el filtro necesita las 3.", Game.GOLD)
+		Game.notify("Faltan capas: el filtro necesita las 3.", Game.WARNING)
 		return
 	_busy = true
 	_tries += 1
@@ -77,12 +77,12 @@ func _pour() -> void:
 		_tries = 0  # se puede repetir para mejorar la marca
 		Sfx.play("success")
 		Fx.confetti(self, COLUMN + Vector3(2.6, 2, 0))
-		Game.notify("¡Agua limpia! Así recicla el agua la Estación Espacial: filtrar y volver a usar.", Game.GREEN)
+		Game.notify("¡Agua limpia! Así recicla el agua la Estación Espacial: filtrar y volver a usar.", Game.SUCCESS)
 		Game.set_stars("moon_water", stars)
 	else:
 		Sfx.play("error")
 		Fx.shake(self, 0.3)
-		Game.notify("Agua turbia. Arriba la grava frena lo grueso, en medio la arena atrapa lo fino y abajo el carbón quita olores.", Game.RED)
+		Game.notify("Agua turbia. Arriba la grava frena lo grueso, en medio la arena atrapa lo fino y abajo el carbón quita olores.", Game.DANGER)
 	await get_tree().create_timer(2.0).timeout
 	for layer in _layers:  # filtro vacío para otro intento
 		layer.queue_free()

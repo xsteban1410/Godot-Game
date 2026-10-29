@@ -59,7 +59,7 @@ static func _crane(root: Node3D) -> Node3D:
 	Kit.cylinder(jib, 0.04, 0.04, 5.0, Vector3(6.0, -2.5, 0), dark, 6)
 	Kit.box(jib, Vector3(3.0, 0.35, 0.45), Vector3(6.0, -5.2, 0), Kit.mat(Game.MODULES.bridge.color))  # viga
 	Kit.cylinder(jib, 0.08, 0.08, 1.6, Vector3(0, 1.0, 0), dark, 6)
-	Kit.sphere(jib, 0.16, Vector3(0, 1.85, 0), Kit.mat(Game.RED, 4.0), Vector3.ONE, 10)  # luz de aviso
+	Kit.sphere(jib, 0.16, Vector3(0, 1.85, 0), Kit.mat(Game.ACCENT, 4.0), Vector3.ONE, 10)  # luz de aviso
 	Kit.bake(jib)
 	return jib
 
@@ -147,7 +147,7 @@ static func _camera_and_heart(root: Node3D) -> void:
 	Kit.cylinder(root, 0.9, 1.0, 1.0, c + Vector3(0, 7.9, 1.4), Kit.mat(Color("3a4352")), 24, Vector3(PI / 2, 0, 0))
 	Kit.sphere(root, 0.75, c + Vector3(0, 7.9, 1.9), Kit.mat(Color("05070c"), 0.0, 0.3, 0.03), Vector3(1, 1, 0.4))
 	Kit.sphere(root, 0.26, c + Vector3(0, 7.9, 2.15), Kit.mat(color, 4.0), Vector3(1, 1, 0.4))
-	Kit.sphere(root, 0.18, c + Vector3(1.1, 9.0, 0.6), Kit.mat(Game.RED, 4.0), Vector3.ONE, 10)  # luz de grabación
+	Kit.sphere(root, 0.18, c + Vector3(1.1, 9.0, 0.6), Kit.mat(Game.ACCENT, 4.0), Vector3.ONE, 10)  # luz de grabación
 	var heart: String = ".#.#. ##### ##### .###. ..#..".replace(" ", "")
 	var h := Vector3(3.6, 0, 0)
 	Kit.box(root, Vector3(5.0, 5.0, 0.3), h + Vector3(0, 4.4, -0.3), Kit.mat(Color("1d2233")))

@@ -102,7 +102,7 @@ func _process(delta: float) -> void:
 
 ## Frase de la historia; es de la escena: si dejas la Luna antes, no sale en la Tierra.
 func _story(i: int) -> void:
-	Game.notify(STORY[i], Game.GOLD)
+	Game.notify(STORY[i], Game.INK)
 
 
 ## Postes con luz del color del reto cada 4,5 m, de la llegada hasta `stop` metros antes del reto.
@@ -148,7 +148,7 @@ func _lander(p: Vector3) -> void:
 	Kit.cylinder(self, 0.05, 0.05, 3.2, flag + Vector3(0, 1.6, 0), Kit.mat(Color("cfd8e6"), 0.0, 0.7), 8)
 	Kit.cylinder(self, 0.04, 0.04, 1.7, flag + Vector3(0.82, 3.15, 0), Kit.mat(Color("cfd8e6"), 0.0, 0.7), 6, Vector3(0, 0, PI / 2))
 	Kit.box(self, Vector3(1.6, 1.0, 0.04), flag + Vector3(0.82, 2.62, 0), Kit.mat(Color("1f6fff")))
-	Kit.box(self, Vector3(1.6, 0.22, 0.05), flag + Vector3(0.82, 2.62, 0), Kit.mat(Game.GOLD))
+	Kit.box(self, Vector3(1.6, 0.22, 0.05), flag + Vector3(0.82, 2.62, 0), Kit.mat(Game.WARNING))
 	Kit.label(self, "STEAM", flag + Vector3(0.82, 2.62, 0.04), 36, Color("1d2a3a"), false, 0.008)
 	Kit.pillar(self, 0.15, 3.2, flag + Vector3(0, 1.6, 0))
 	for spec: Array in [["astronautA", Vector3(-6, 0, -5), 0.6], ["astronautB", Vector3(6, 0, 5), -2.2]]:

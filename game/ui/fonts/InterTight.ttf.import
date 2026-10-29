@@ -2,13 +2,13 @@
 
 importer="font_data_dynamic"
 type="FontFile"
-uid="uid://cgqsl6v3se4hk"
-path="res://.godot/imported/Rubik-ExtraBold.ttf-849a037a0188d2e6ca56c80ae4474e23.fontdata"
+uid="uid://bvkotckeg8ji5"
+path="res://.godot/imported/InterTight.ttf-58d5f513357c5f05dafe1bd1d0e9692c.fontdata"
 
 [deps]
 
-source_file="res://ui/fonts/Rubik-ExtraBold.ttf"
-dest_files=["res://.godot/imported/Rubik-ExtraBold.ttf-849a037a0188d2e6ca56c80ae4474e23.fontdata"]
+source_file="res://ui/fonts/InterTight.ttf"
+dest_files=["res://.godot/imported/InterTight.ttf-58d5f513357c5f05dafe1bd1d0e9692c.fontdata"]
 
 [params]
 

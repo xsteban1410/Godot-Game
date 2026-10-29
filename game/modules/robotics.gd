@@ -240,7 +240,7 @@ func _new_board() -> void:
 				Kit.box(_board, Vector3(0.8, 0.7, 0.8), _pos(cell) + Vector3(0, 0.35, 0), Kit.mat(block_color))
 				for stud in [Vector3(-0.18, 0, -0.18), Vector3(0.18, 0, -0.18), Vector3(-0.18, 0, 0.18), Vector3(0.18, 0, 0.18)]:
 					Kit.cylinder(_board, 0.12, 0.12, 0.1, _pos(cell) + Vector3(0, 0.75, 0) + stud, Kit.mat(block_color), 12)
-	var star: Node3D = Kit.label(_board, "★", _pos(_goal) + Vector3(0, 1.0, 0), 160, Game.GOLD, true, 0.006)
+	var star: Node3D = Kit.label(_board, "★", _pos(_goal) + Vector3(0, 1.0, 0), 160, Game.WARNING, true, 0.006)
 	if rover:
 		star.queue_free()
 		star = Node3D.new()
@@ -325,7 +325,7 @@ func _refresh_chips(active := -1) -> void:
 	UI.clear(_chips)
 	for i in _program.size():
 		var chip := PanelContainer.new()
-		chip.add_child(UI.label("%d %s" % [i + 1, NAMES[_program[i]]], "Caption", Game.GOLD if i == active else Game.TEXT))
+		chip.add_child(UI.label("%d %s" % [i + 1, NAMES[_program[i]]], "Caption", Game.INK if i == active else Game.MUTED))
 		_chips.add_child(chip)
 		if i == active:
 			UI.pop(chip)

@@ -65,7 +65,7 @@ func start() -> void:
 	_index = 0
 	_mistakes = 0
 	Sfx.play("pickup")
-	Game.notify("Salta y, en el aire, vuelve a saltar: ¡el jetpack te sube! Mantenlo para volar.", Game.TEAL)
+	Game.notify("Salta y, en el aire, vuelve a saltar: ¡el jetpack te sube! Mantenlo para volar.", Game.INK)
 	_show_question()
 
 
@@ -126,8 +126,8 @@ func _on_land(body: Node3D, pad: int) -> void:
 			_mistakes += 1
 		Sfx.play("error")
 		Fx.shake(self, 0.3)
-		_rings[pad].material_override = Kit.mat(Game.RED, 3.0)
-		Game.notify("¡%s no es la respuesta! Prueba otra plataforma." % _numbers[pad].text, Game.RED)
+		_rings[pad].material_override = Kit.mat(Game.DANGER, 3.0)
+		Game.notify("¡%s no es la respuesta! Prueba otra plataforma." % _numbers[pad].text, Game.DANGER)
 		body.velocity = (body.global_position - _pads[pad].global_position).normalized() * 6.0 + Vector3(0, 7.0, 0)  # rebote fuera
 		var sink := create_tween()
 		sink.tween_property(_pads[pad], "position:y", PADS[pad].y - 0.6, 0.15)
@@ -135,7 +135,7 @@ func _on_land(body: Node3D, pad: int) -> void:
 		_board.text = "PREGUNTA %d / %d  ·  errores: %d\n%s = ?" % [_index + 1, ROUND, _mistakes, _questions[_index][0]]
 		return
 	_busy = true
-	_rings[pad].material_override = Kit.mat(Game.GREEN, 3.0)
+	_rings[pad].material_override = Kit.mat(Game.SUCCESS, 3.0)
 	Sfx.play("success")
 	Fx.confetti(self, _pads[pad].position + Vector3(0, 1, 0))
 	_board.text = "¡CORRECTO!\n%s = %d" % [_questions[_index][0].replace("\n", " "), _questions[_index][1]]

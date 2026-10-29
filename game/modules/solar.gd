@@ -53,7 +53,7 @@ func _ready() -> void:
 	roof.size = Vector3(5.8, 1.6, 4.6)
 	Kit.part(self, roof, Vector3(0, 3.8, -5), Kit.mat(Color("ff8c1a")))
 	Kit.box(self, Vector3(1.0, 1.7, 0.1), Vector3(0, 0.85, -2.98), Kit.mat(Color("1f6fff")))
-	Kit.sphere(self, 0.07, Vector3(0.32, 0.85, -2.9), Kit.mat(Game.GOLD, 0.0, 0.8))  # pomo
+	Kit.sphere(self, 0.07, Vector3(0.32, 0.85, -2.9), Kit.mat(Game.WARNING, 0.0, 0.8))  # pomo
 	Kit.box(self, Vector3(1.6, 0.16, 0.7), Vector3(0, 0.08, -2.65), white)  # escalón
 	Kit.box(self, Vector3(0.6, 1.4, 0.6), Vector3(1.6, 4.3, -5.8), Kit.mat(Color("e0533a")))  # chimenea
 	for p in [Vector3(-1.5, 2.2, -2.95), Vector3(0, 2.2, -2.95), Vector3(1.5, 2.2, -2.95), Vector3(-1.5, 1.0, -2.95), Vector3(1.5, 1.0, -2.95)]:
@@ -108,7 +108,7 @@ func _show_question() -> void:
 		var button := UI.button(_answers[i], _answer.bind(i))
 		button.custom_minimum_size = Vector2(500, 70)
 		_grid.add_child(button)
-	_feedback = UI.label("", "", Game.RED)
+	_feedback = UI.label("", "", Game.DANGER)
 	column.add_child(_feedback)
 	UI.focus(_grid.get_child(0))
 
@@ -154,7 +154,7 @@ func _page(title: String, text: String) -> VBoxContainer:
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size.x = 1060
 	_content.add_child(panel)
-	UI.pop.call_deferred(panel)  # cuando ya tiene contenido: así crece desde su centro
+	UI.pop.call_deferred(panel)  # cuando ya tiene contenido
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation", 18)
 	panel.add_child(column)

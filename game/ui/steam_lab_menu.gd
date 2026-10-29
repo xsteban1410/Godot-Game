@@ -48,15 +48,14 @@ func _build() -> void:
 	column.add_theme_constant_override("separation", 14)
 	panel.add_child(column)
 
-	var title := UI.label("STEAM LAB", "Title", Game.TEAL)
+	var title := UI.label("STEAM LAB", "Title")
 	title.add_theme_font_size_override("font_size", 72)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(title)
 	var motto := UI.label("LABORATORIO DE DESAFÍOS  ·  ELIGE TU MISIÓN. RESUELVE. AVANZA.", "Caption")
 	motto.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(motto)
-	var progress := UI.label("COHETE ★ %d / 12    ·    LABORATORIO ★ %d / 9" % [Game.total_stars(), Game.total_stars(Game.LAB_MODULES)], "Title", Game.GOLD)
-	progress.add_theme_font_size_override("font_size", 28)
+	var progress := UI.label("COHETE ★ %02d / 12    ·    LABORATORIO ★ %02d / 9" % [Game.total_stars(), Game.total_stars(Game.LAB_MODULES)], "Mono")
 	progress.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(progress)
 
@@ -90,16 +89,12 @@ func _card(text: String, color: Color, on_pressed: Callable) -> Button:
 	card.custom_minimum_size = Vector2(300, 170)
 	card.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	card.add_theme_font_size_override("font_size", 24)
-	for state in ["normal", "hover"]:
-		var style: StyleBoxFlat = UI.THEME.get_stylebox(state, "Button").duplicate()
-		style.border_width_top = 8
-		style.border_color = color
-		if state == "hover":
-			style.bg_color = color.darkened(0.55)
-		card.add_theme_stylebox_override(state, style)
-	var focus: StyleBoxFlat = UI.THEME.get_stylebox("focus", "Button").duplicate()
-	focus.border_color = color
-	card.add_theme_stylebox_override("focus", focus)
+	var strip := ColorRect.new()  # filete superior fino del color del reto (un StyleBox pinta los 4 bordes de un color)
+	strip.color = color
+	strip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	strip.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+	strip.offset_bottom = 3
+	card.add_child(strip)
 	return card
 
 

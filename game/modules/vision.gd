@@ -93,7 +93,7 @@ func _on_stand() -> void:
 		_stand.prompt = "ANALIZAR EL DIBUJO"
 		_clear()
 		Sfx.play("pickup")
-		Game.notify("Pisa las baldosas para encender píxeles. Salta (o usa el jetpack) para no pisar las que no quieres.", Game.TEAL)
+		Game.notify("Pisa las baldosas para encender píxeles. Salta (o usa el jetpack) para no pisar las que no quieres.", Game.INK)
 		_show_goal()
 	else:
 		_analyze()
@@ -154,7 +154,7 @@ func _analyze() -> void:
 		Sfx.play("success")
 		Fx.confetti(self, Vector3(0, 1, -4.0))
 		Game.set_stars("vision", _level + 1)
-		Game.notify("¡La IA reconoce tu dibujo: %s, con un %d %% de seguridad!" % [goal, ranking[0][1]], Game.GREEN)
+		Game.notify("¡La IA reconoce tu dibujo: %s, con un %d %% de seguridad!" % [goal, ranking[0][1]], Game.SUCCESS)
 		await get_tree().create_timer(2.0).timeout
 		if _level < GOALS.size() - 1:
 			_level += 1
@@ -166,7 +166,7 @@ func _analyze() -> void:
 	else:
 		Sfx.play("error")
 		Game.notify("La IA ve %s al %d %%. Para la estrella tiene que ver %s al %d %% o más: ¡corrige el dibujo!"
-			% [ranking[0][0], ranking[0][1], goal, CONFIDENCE], Game.GOLD)
+			% [ranking[0][0], ranking[0][1], goal, CONFIDENCE], Game.WARNING)
 	_busy = false
 
 

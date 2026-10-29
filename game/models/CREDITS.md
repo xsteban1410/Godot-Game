@@ -10,5 +10,6 @@ Todos son de dominio público (CC0 1.0): se pueden usar sin pedir permiso.
 
 ## Fuentes (`ui/fonts/`)
 
-Rubik (Rubik Project Authors) y `Symbols.ttf`, un subconjunto de Inter Bold (Inter Project Authors) con los
-símbolos que Rubik no tiene (★ ☆ ← ↑ → Ω). Las dos con licencia SIL Open Font License 1.1 (`ui/fonts/OFL.txt`).
+Space Grotesk (títulos y letreros 3D), Inter Tight (texto), Space Mono (cifras y rótulos técnicos), Doto (números
+grandes en matriz de puntos) y `Symbols.ttf`, un subconjunto de Inter Bold con ★ ☆ ← ↑ → Ω para las que no los
+tienen. Todas con licencia SIL Open Font License 1.1: cada una con su `ui/fonts/OFL-*.txt`.
