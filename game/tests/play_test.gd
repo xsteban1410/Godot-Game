@@ -99,6 +99,8 @@ func _run() -> void:
 	_check(start.z - player.global_position.z > 1.5, "el stick izquierdo del mando mueve al jugador (%.2f m)" % (start.z - player.global_position.z))
 	var hud: CanvasLayer = current_scene.get_node("HUD")
 	_check("Gana estrellas" in hud.objective(false), "sin piezas, el objetivo es ganar estrellas")
+	var goal: Vector3 = hud.minimap.target(player.global_position)
+	_check(_game.MODULES.keys().any(func(id: String) -> bool: return current_scene.DISTRICTS[id] == goal), "el minimapa marca en rojo un reto del cohete")
 	var button := InputEventJoypadButton.new()
 	button.button_index = JOY_BUTTON_BACK  # un botón sin acción: solo cambia el aviso
 	button.pressed = true
@@ -373,6 +375,7 @@ func _run() -> void:
 
 	_check(_find("_set_water")._pad.prompt.ends_with("(0 / 4 retos)"), "sin los retos lunares el cohete no puede volver")
 	_check("(0 / 4)" in current_scene.get_node("HUD").objective(true), "en la Luna, el objetivo son los 4 retos lunares")
+	_check(current_scene.CHALLENGES.has(current_scene.get_node("HUD").minimap.target(astronaut.global_position)), "en la Luna, el minimapa marca un reto lunar")
 	var moon_bolts: Array = current_scene.find_children("*", "", true, false).filter(_is_bolt)
 	_check(moon_bolts.size() + 22 == _game.BOLTS_TOTAL, "la Luna tiene las 10 tuercas que faltan (%d)" % moon_bolts.size())
 	var moon_space := astronaut.get_world_3d().direct_space_state

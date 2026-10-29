@@ -17,6 +17,7 @@ static func spawn(parent: Node3D, bolt_id: String, pos: Vector3) -> void:
 
 
 func _ready() -> void:
+	add_to_group("bolt")  # el minimapa dibuja las que faltan
 	collision_layer = 0
 	collision_mask = 1
 	var shape := CollisionShape3D.new()

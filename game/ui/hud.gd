@@ -1,8 +1,12 @@
 extends CanvasLayer
-## HUD: estrellas por reto, aviso de interacción, notificaciones y celebración al ganar estrellas.
+## HUD: minimapa con el objetivo y las estrellas por reto, aviso de interacción, notificaciones y celebraciones.
 
-var _missions: VBoxContainer
-var _objective: Label
+const MINIMAP := preload("res://ui/minimap.gd")
+const SIDE := 320.0  # ancho de la columna derecha (minimapa y objetivos)
+const TOAST_WIDTH := 1000.0  # los avisos largos se parten: así no tapan la columna derecha
+
+var minimap: Control  # las escenas le dan sus puntos: minimap.add_point(posición, id)
+var _objectives: VBoxContainer
 var _prompt: PanelContainer
 var _prompt_label: Label
 var _key: Label  # tecla del aviso: E con teclado, X con mando
@@ -26,25 +30,21 @@ func _ready() -> void:
 	var column := VBoxContainer.new()
 	margin.add_child(column)
 
-	var top := HBoxContainer.new()
-	top.alignment = BoxContainer.ALIGNMENT_END
-	top.add_theme_constant_override("separation", 20)
-	column.add_child(top)
-	var objective_panel := PanelContainer.new()  # «SIGUIENTE»: qué toca hacer en la historia
-	objective_panel.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-	objective_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL | Control.SIZE_SHRINK_BEGIN
-	var objective_column := VBoxContainer.new()
-	objective_panel.add_child(objective_column)
-	objective_column.add_child(UI.label("SIGUIENTE", "Caption", Game.ACCENT))
-	_objective = UI.label("")
-	_objective.custom_minimum_size.x = 420
-	_objective.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	objective_column.add_child(_objective)
-	top.add_child(objective_panel)
-	var missions_panel := PanelContainer.new()
-	_missions = VBoxContainer.new()
-	missions_panel.add_child(_missions)
-	top.add_child(missions_panel)
+	var side := VBoxContainer.new()  # arriba a la derecha: minimapa y, debajo, el objetivo y los retos
+	side.theme = UI.THEME
+	side.add_theme_constant_override("separation", 12)
+	side.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT, Control.PRESET_MODE_MINSIZE, 28)
+	side.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	add_child(side)
+	minimap = MINIMAP.new()
+	minimap.moon = moon
+	side.add_child(minimap)
+	var objectives_panel := PanelContainer.new()
+	objectives_panel.custom_minimum_size.x = SIDE
+	_objectives = VBoxContainer.new()
+	_objectives.add_theme_constant_override("separation", 4)
+	objectives_panel.add_child(_objectives)
+	side.add_child(objectives_panel)
 
 	_toasts = VBoxContainer.new()
 	_toasts.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -77,8 +77,9 @@ func _ready() -> void:
 	Game.bolts_changed.connect(_on_bolts_changed)
 	Game.toast.connect(_show_toast)
 	Game.prompt_changed.connect(_on_prompt_changed)
-	_refresh_missions()
+	_refresh_objectives()
 	UI.ignore_mouse(margin)
+	UI.ignore_mouse(side)
 
 
 ## El aviso y la línea de controles siguen al último control usado (el movimiento del ratón no cuenta: haría parpadear).
@@ -96,17 +97,23 @@ func _on_prompt_changed(text: String) -> void:
 	_prompt_label.text = text
 
 
-func _refresh_missions() -> void:
-	UI.clear(_missions)
+## Objetivo de la historia y, debajo, cada reto con sus estrellas, las piezas del cohete y las tuercas.
+func _refresh_objectives() -> void:
+	UI.clear(_objectives)
+	_objectives.add_child(UI.label("OBJETIVO", "Caption", Game.ACCENT))
+	var text := UI.label(objective(moon))
+	text.add_theme_font_size_override("font_size", 20)
+	text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_objectives.add_child(text)
+	_objectives.add_child(HSeparator.new())
 	if moon:
-		_mission_list("MISIONES LUNARES", Game.MOON_MODULES)
+		_challenge_rows(Game.MOON_MODULES)
 	else:
-		_mission_list("MISIONES", Game.MODULES)
-		_missions.add_child(UI.label("COHETE  ·  %02d / 12 PIEZAS" % Game.total_stars(), "Caption"))
-		_mission_list("LABORATORIO", Game.LAB_MODULES)
-	_missions.add_child(UI.label("TUERCAS  ·  %02d / %d" % [Game.bolts.size(), Game.BOLTS_TOTAL], "Caption"))
-	UI.ignore_mouse(_missions)
-	_objective.text = objective(moon)
+		_challenge_rows(Game.MODULES)
+		_objectives.add_child(_counter("COHETE", Game.total_stars(), 12))
+		_challenge_rows(Game.LAB_MODULES)
+	_objectives.add_child(_counter("TUERCAS", Game.bolts.size(), Game.BOLTS_TOTAL))
+	UI.ignore_mouse(_objectives)
 
 
 ## El siguiente paso de la historia: piezas del cohete → la Luna → volver → completarlo todo.
@@ -124,27 +131,48 @@ static func objective(on_moon: bool) -> String:
 
 
 func _on_bolts_changed(_count: int) -> void:
-	_refresh_missions()
+	_refresh_objectives()
 	if Game.golden():
 		_shout("¡TRAJE DORADO!", Game.INK, "Encontraste las %d tuercas" % Game.BOLTS_TOTAL)
 
 
-func _mission_list(title: String, modules: Dictionary) -> void:
-	_missions.add_child(UI.label("%s  ·  ★ %02d / %d" % [title, Game.total_stars(modules), modules.size() * 3], "Caption"))
+## Una fila por reto: cuadrado de su color (como en el minimapa), nombre y estrellas.
+func _challenge_rows(modules: Dictionary) -> void:
 	for id: String in modules:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 10)
-		row.add_child(UI.label("•", "Title", modules[id].color))  # el color discreto del reto
+		var swatch := ColorRect.new()
+		swatch.color = modules[id].color
+		swatch.custom_minimum_size = Vector2(10, 10)
+		swatch.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		row.add_child(swatch)
 		var label := UI.label(modules[id].name)
+		label.add_theme_font_size_override("font_size", 20)
 		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(label)
-		row.add_child(UI.label(UI.stars(int(Game.stars.get(id, 0))), "", Game.INK))
-		_missions.add_child(row)
+		var stars := UI.label(UI.stars(int(Game.stars.get(id, 0))), "", Game.INK)
+		stars.add_theme_font_size_override("font_size", 20)
+		row.add_child(stars)
+		_objectives.add_child(row)
+
+
+## Contador técnico en mono: «COHETE        07 / 12».
+func _counter(title: String, count: int, total: int) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	var label := UI.label(title, "Caption")
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(label)
+	row.add_child(UI.label("%02d / %d" % [count, total], "Caption", Game.INK))
+	return row
 
 
 func _show_toast(text: String, color: Color) -> void:
 	var panel := PanelContainer.new()
-	panel.add_child(UI.label(text, "", color))
+	var label := UI.label(text, "", color)
+	if UI.THEME.default_font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, UI.THEME.default_font_size).x > TOAST_WIDTH:
+		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		label.custom_minimum_size.x = TOAST_WIDTH
+	panel.add_child(label)
 	_toasts.add_child(panel)
 	UI.ignore_mouse(panel)
 	UI.pop(panel)
@@ -189,7 +217,7 @@ func _shout(text: String, color: Color, subtitle := "") -> VBoxContainer:
 
 ## Celebración: nombre del reto y estrellas que aparecen una a una.
 func _on_stars_changed(module: String, stars: int) -> void:
-	_refresh_missions()
+	_refresh_objectives()
 	var column: VBoxContainer = await _shout("¡%s!" % String(Game.info(module).name).to_upper(), Game.info(module).color)
 	var row := HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER

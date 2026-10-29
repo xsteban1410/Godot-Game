@@ -101,6 +101,11 @@ func _ready() -> void:
 	if not _welcomed:  # la bienvenida, una vez por sesión (no al volver de la Luna)
 		_welcomed = true
 		get_tree().create_timer(2.0).timeout.connect(Game.notify.bind(WELCOME, Game.INK))
+	var minimap: Control = $HUD.minimap
+	for id: String in DISTRICTS:
+		minimap.add_point(DISTRICTS[id], id)
+	minimap.add_point(LAUNCH, "rocket")
+	minimap.add_point(Vector3.ZERO, "lab")
 	$SteamLab.travel_requested.connect(_travel_to_district)
 	Game.stars_changed.connect(_on_stars_changed)
 

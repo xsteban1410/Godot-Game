@@ -65,8 +65,11 @@ func _ready() -> void:
 	rocket.moon = true
 	rocket.position = Vector3(0, 0, -6)
 	add_child(rocket)
+	var minimap: Control = $HUD.minimap
+	minimap.add_point(rocket.position, "rocket")
 	for pos: Vector3 in CHALLENGES:
 		var id: String = CHALLENGES[pos]
+		minimap.add_point(pos, id)
 		var challenge: Node3D = SCRIPTS[id].new()
 		if id == "moon_rover":
 			challenge.rover = true

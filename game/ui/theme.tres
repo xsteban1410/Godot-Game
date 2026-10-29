@@ -136,6 +136,9 @@ variation_opentype = {
 2003265652: 500
 }
 
+[sub_resource type="StyleBoxLine" id="separator"]
+color = Color(0.188, 0.188, 0.188, 1.0)
+
 [resource]
 default_font = SubResource("body")
 default_font_size = 24
@@ -162,6 +165,8 @@ Display/colors/font_outline_color = Color(0.035, 0.035, 0.035, 0.9)
 Display/constants/outline_size = 12
 Display/font_sizes/font_size = 120
 Display/fonts/font = SubResource("dot")
+HSeparator/constants/separation = 12
+HSeparator/styles/separator = SubResource("separator")
 KeyCap/base_type = &"PanelContainer"
 KeyCap/styles/panel = SubResource("keycap")
 Label/colors/font_color = Color(0.961, 0.961, 0.961, 1)
