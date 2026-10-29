@@ -4,7 +4,7 @@ extends Node3D
 
 @export var waypoints := PackedVector3Array()
 @export var speed := 2.5
-@export var accent := Color("ff8a1f")
+@export var accent := Color("ffd0a5")
 
 var _index := 0
 var _dance := 0.0  # segundos de baile que quedan

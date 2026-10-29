@@ -1,10 +1,10 @@
 shader_type spatial;
 // Plástico de juguete de las piezas que funde Kit.bake: el color de cada pieza llega en los vértices (rgb)
 // y su luz propia en el alfa (× 8). Así piezas de distinto color, con o sin luz, comparten un material y
-// un draw call por trozo, con el mismo aspecto que Kit.mat (rugosidad, metal y borde de luz).
+// un draw call por trozo, con el mismo aspecto mate que Kit.mat (rugosidad, metal y borde de luz).
 
 uniform float metallic = 0.0;
-uniform float roughness = 0.22;
+uniform float roughness = 0.5;
 
 varying vec4 tint;
 
@@ -17,7 +17,7 @@ void fragment() {
 	ALBEDO = tint.rgb;
 	METALLIC = metallic;
 	ROUGHNESS = roughness;
-	RIM = 0.3;
+	RIM = 0.1;
 	RIM_TINT = 0.7;
 	EMISSION = tint.rgb * tint.a;
 }

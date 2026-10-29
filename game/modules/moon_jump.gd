@@ -53,7 +53,7 @@ func _collect(body: Node3D, area: Area3D, index: int) -> void:
 	if not body.is_in_group("player") or not is_instance_valid(area):
 		return
 	Sfx.play("pickup")
-	Fx.burst(self, area.position, [Color("bfe6ff"), Color.WHITE, Color("2ec4ff")], 40, 6.0, 0.12)
+	Fx.burst(self, area.position, [Color("bfe6ff"), Color.WHITE, Color("abe7ff")], 40, 6.0, 0.12)
 	area.queue_free()
 	_crystals.erase(area)
 	Game.collect_ice(index)

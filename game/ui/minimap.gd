@@ -11,6 +11,7 @@ const SIZE := 320.0
 
 var moon := false
 var _points: Array[Array] = []  # [posición, id]: id de reto, "rocket" o "lab"
+var _last_state := []
 
 
 func _ready() -> void:
@@ -23,8 +24,17 @@ func add_point(pos: Vector3, id: String) -> void:
 	_points.append([pos, id])
 
 
+## Redibuja solo si algo cambió (jugador, cámara, tuercas o estrellas): quieto, no cuesta nada.
 func _process(_delta: float) -> void:
-	queue_redraw()
+	var player: Node3D = get_tree().get_first_node_in_group("player")
+	var camera := get_viewport().get_camera_3d()
+	if not player or not camera:
+		return
+	var state := [player.global_position.snapped(Vector3.ONE * 0.05), snappedf(camera.global_rotation.y, 0.01),
+		get_tree().get_node_count_in_group("bolt"), Game.stars.hash()]
+	if state != _last_state:
+		_last_state = state
+		queue_redraw()
 
 
 ## Posición (mundo) del siguiente objetivo según la historia, la más cercana a `from`; Vector3.INF si no hay.

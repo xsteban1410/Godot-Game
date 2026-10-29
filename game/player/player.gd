@@ -22,7 +22,7 @@ const JET_FUEL := 1.3  # segundos de empuje; se recarga al pisar suelo
 const JET_LIFT := 5.5  # velocidad de subida con el jetpack (m/s)
 const MAX_PRINTS := 80
 const PAD_TURN := 3.0  # giro de la cámara con el stick derecho (rad/s)
-const BLUE := Color("1f6fff")
+const BLUE := Color("a5c5ff")
 const GOLD := Color("ffb627")  # traje con todas las tuercas doradas
 
 @onready var _avatar: Node3D = $Avatar
@@ -282,12 +282,12 @@ func _land(fall_speed: float) -> void:
 ## Robot del jugador con su jetpack: dos llamas que salen de las toberas, humo y la franja de combustible.
 func _build_avatar() -> void:
 	_golden = Game.golden()
-	_robot = RobotModel.create(_avatar, accent(), Color("35b8ff"), true)
+	_robot = RobotModel.create(_avatar, accent(), Color("aee3ff"), true)
 	for nozzle in _robot.nozzles:
 		var flame := Node3D.new()  # pivote en la tobera: la llama se estira hacia abajo
 		flame.visible = false
 		nozzle.add_child(flame)
-		Kit.cylinder(flame, 0.055, 0.0, 0.36, Vector3(0, -0.18, 0), Kit.mat(Color("ffb347"), 4.0), 10).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		Kit.cylinder(flame, 0.055, 0.0, 0.36, Vector3(0, -0.18, 0), Kit.mat(Color("ffe1b5"), 4.0), 10).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		Kit.cylinder(flame, 0.03, 0.0, 0.2, Vector3(0, -0.1, 0), Kit.mat(Color("fff6c8"), 6.0), 8).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		_flames.append(flame)
 	var puff := SphereMesh.new()

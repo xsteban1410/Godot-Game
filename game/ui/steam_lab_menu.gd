@@ -70,7 +70,7 @@ func _build() -> void:
 		grid.add_child(card)
 		if not _first_card:
 			_first_card = card
-	grid.add_child(_card("COHETE DE AGUA\nPlataforma de lanzamiento\n%d / 12 piezas" % Game.total_stars(), Color("ff8c1a"), _choose.bind("rocket")))
+	grid.add_child(_card("COHETE DE AGUA\nPlataforma de lanzamiento\n%d / 12 piezas" % Game.total_stars(), Game.INK_2, _choose.bind("rocket")))
 	for id: String in Game.LAB_MODULES:
 		grid.add_child(_card(_text(id), Game.LAB_MODULES[id].color, _choose.bind(id)))
 

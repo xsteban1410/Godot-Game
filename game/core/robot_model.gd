@@ -26,7 +26,7 @@ var _eyes: Color
 
 
 ## Robot de color `accent` con ojos `eyes`, ya colgado de `parent` y en reposo.
-static func create(parent: Node3D, accent: Color, eyes := Color("35b8ff"), jetpack := false) -> RobotModel:
+static func create(parent: Node3D, accent: Color, eyes := Color("aee3ff"), jetpack := false) -> RobotModel:
 	var robot := RobotModel.new()
 	parent.add_child(robot)
 	robot._build(accent, eyes, jetpack)

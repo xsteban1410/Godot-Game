@@ -11,7 +11,7 @@ const LEVELS := [[5, 5, 4], [6, 6, 8], [7, 6, 11]]  # ancho, alto, bloques
 const ROVER_LEVELS := [[5, 5, 5], [6, 6, 9], [7, 7, 13]]
 const DIRS := [Vector2i(0, 1), Vector2i(1, 0), Vector2i(0, -1), Vector2i(-1, 0)]  # rumbo 0 = hacia el fondo
 const NAMES := {"F": "AVANZAR", "L": "IZQUIERDA", "R": "DERECHA"}
-const BLOCK_COLORS := ["ff4f8b", "ffcc00", "4cd964", "9b6bff", "ff8c1a"]
+const BLOCK_COLORS := ["ffb9d1", "ffeb99", "a1d9aa", "d7c4ff", "ffd1a3"]
 
 @export var rover := false
 
@@ -170,7 +170,7 @@ func _crash(target: Vector2i) -> void:
 	tween.tween_property(_robot, "position", hit, 0.12).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	await tween.finished
 	Sfx.play("boom")
-	Fx.burst(self, hit + Vector3(0, 0.5, 0), [Color("ffcc00"), Color("ff8c1a"), Color.WHITE], 35, 6.0, 0.1)
+	Fx.burst(self, hit + Vector3(0, 0.5, 0), [Color("ffeb99"), Color("ffd1a3"), Color.WHITE], 35, 6.0, 0.1)
 	Fx.shake(self, 0.35)
 	tween = create_tween()
 	tween.tween_property(_robot, "position", from, 0.35).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
@@ -231,7 +231,7 @@ func _new_board() -> void:
 			var cell := Vector2i(x, y)
 			var light := Color("8f939b") if rover else Color("f4f7fb")
 			var dark := Color("7a7e86") if rover else Color("dbe9f7")
-			var color := Color("ffcc00") if cell == _goal else Color("1fa8ff") if cell == Vector2i.ZERO else light if (x + y) % 2 == 0 else dark
+			var color := Color("ffeb99") if cell == _goal else Color("a5dcff") if cell == Vector2i.ZERO else light if (x + y) % 2 == 0 else dark
 			Kit.box(_board, Vector3(CELL * 0.94, 0.12, CELL * 0.94), _pos(cell) - Vector3(0, 0.06, 0), Kit.mat(color))
 			if _blocks.has(cell) and rover:
 				Kit.model(_board, "kenney/space/rock_largeA", Transform3D(Basis(Vector3.UP, x + y).scaled(Vector3.ONE * 1.1), _pos(cell)), false, null, Kit.MOON_ROCK)

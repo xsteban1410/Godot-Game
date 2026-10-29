@@ -81,7 +81,7 @@ static func model_size(path: String) -> AABB:
 
 ## Plástico de juguete estilo Astro Bot: brillante y con un borde de luz que separa la silueta.
 ## Sin clearcoat: costaba 3,3 ms de GPU a 1080p en la Radeon 610M y una rugosidad baja da el mismo brillo.
-static func mat(color: Color, emission := 0.0, metallic := 0.0, roughness := 0.22) -> StandardMaterial3D:
+static func mat(color: Color, emission := 0.0, metallic := 0.0, roughness := 0.5) -> StandardMaterial3D:
 	var key := "%s|%s|%s|%s" % [color.to_html(), emission, metallic, roughness]
 	if not _materials.has(key):
 		var m := StandardMaterial3D.new()
@@ -89,7 +89,7 @@ static func mat(color: Color, emission := 0.0, metallic := 0.0, roughness := 0.2
 		m.metallic = metallic
 		m.roughness = roughness
 		m.rim_enabled = true
-		m.rim = 0.3
+		m.rim = 0.1  # acabado mate (DESING): poco brillo de borde
 		m.rim_tint = 0.7
 		if emission > 0.0:
 			m.emission_enabled = true

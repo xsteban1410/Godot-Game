@@ -41,28 +41,28 @@ func _ready() -> void:
 	var white := Kit.mat(Color("f4f7fb"))
 	Kit.cylinder(self, 4.0, 4.4, 0.7, Vector3(0, 0.35, 0), white, 48)
 	Kit.collider(self, Vector3(7, 0.7, 7), Vector3(0, 0.35, 0))
-	Kit.torus(self, 3.5, 3.9, Vector3(0, 0.72, 0), Kit.mat(Color("ff8c1a"), 0.8))
+	Kit.torus(self, 3.5, 3.9, Vector3(0, 0.72, 0), Kit.mat(Color("ffd1a3"), 0.8))
 	if not moon:
 		for x in [-2.6, -4.0]:  # torre de andamios
 			for z in [-0.7, 0.7]:
-				Kit.cylinder(self, 0.08, 0.08, 9.0, Vector3(x, 4.5, z), Kit.mat(Color("ff5a36")), 8)
+				Kit.cylinder(self, 0.08, 0.08, 9.0, Vector3(x, 4.5, z), Kit.mat(Color("ffbdaf")), 8)
 		for y in range(1, 9, 2):
 			Kit.box(self, Vector3(1.5, 0.1, 1.5), Vector3(-3.3, y + 0.5, 0), Kit.mat(Color("cfd8e6")))
 		Kit.collider(self, Vector3(1.6, 9, 1.6), Vector3(-3.3, 4.5, 0))
-		Kit.banner(self, "PLATAFORMA DE LANZAMIENTO", Vector3(0, 10.5, 0), 110, Color("1f6fff"))
+		Kit.banner(self, "PLATAFORMA DE LANZAMIENTO", Vector3(0, 10.5, 0), 110, Color("a5c5ff"))
 		_pump(PUMP)
 		# Grifo con manguera hasta la boquilla: de ahí sale el agua al llenar.
 		var tap := Vector3(-2.4, 0.7, 2.4)
 		Kit.cylinder(self, 0.12, 0.14, 1.2, tap + Vector3(0, 0.6, 0), Kit.mat(Color("f4f7fb")), 12)
 		Kit.box(self, Vector3(0.18, 0.18, 0.5), tap + Vector3(0, 1.2, -0.2), Kit.mat(Color("cfd8e6"), 0.0, 0.7))
-		Kit.cylinder(self, 0.2, 0.2, 0.08, tap + Vector3(0, 1.34, 0), Kit.mat(Color("2ea8ff")), 16)  # llave
-		_hose(tap + Vector3(0, 0.1, 0), Vector3(-0.3, BASE - 0.2, 0.3), Color("2ea8ff"))
+		Kit.cylinder(self, 0.2, 0.2, 0.08, tap + Vector3(0, 1.34, 0), Kit.mat(Color("abdcff")), 16)  # llave
+		_hose(tap + Vector3(0, 0.1, 0), Vector3(-0.3, BASE - 0.2, 0.3), Color("abdcff"))
 	Kit.collider(self, Vector3(2.4, 8.0, 2.4), Vector3(0, 4.7, 0))  # ni la cámara ni el jugador atraviesan el cohete
 	Kit.bake(self)
 	add_child(_ship)
 	add_child(_camera)
 	_camera.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF  # la mueven tweens fuera del paso de física
-	_water_mesh = Kit.cylinder(_ship, 0.86, 0.86, 1.0, Vector3(0, BASE, 0), Kit.mat(Color("2ea8ff"), 0.3, 0.0, 0.05), 32)
+	_water_mesh = Kit.cylinder(_ship, 0.86, 0.86, 1.0, Vector3(0, BASE, 0), Kit.mat(Color("abdcff"), 0.3, 0.0, 0.05), 32)
 	for module: String in PARTS:
 		for i in 3:
 			var part := Node3D.new()
@@ -101,7 +101,7 @@ func _process(delta: float) -> void:
 			var green := _pressure >= GREEN_ZONE.x and _pressure <= GREEN_ZONE.y
 			_in_zone = _in_zone + delta if green else 0.0
 			_gauge.text = "PRESIÓN %d %%\nzona verde: 70–90 %%" % roundi(_pressure * 100)
-			_gauge.modulate = Color("1f9e4a") if green else Game.DANGER if _pressure > GREEN_ZONE.y else Color.WHITE
+			_gauge.modulate = Color("6b9e7c") if green else Game.DANGER if _pressure > GREEN_ZONE.y else Color.WHITE
 			_needle.rotation.z = lerpf(PI * 0.75, -PI * 0.75, minf(_pressure, 1.0))
 			if _in_zone > 1.0:
 				_launch()
@@ -192,7 +192,7 @@ func _launch() -> void:
 	var jet := _jet()
 	Sfx.play("boom")
 	Fx.shake(self, 0.6)
-	Fx.burst(self, Vector3(0, 1, 0), [Color("2ea8ff"), Color.WHITE], 80, 10.0, 0.18)
+	Fx.burst(self, Vector3(0, 1, 0), [Color("abdcff"), Color.WHITE], 80, 10.0, 0.18)
 	if not good:
 		await _fail_hop(jet, player, pilot)
 		return
@@ -260,7 +260,7 @@ func _return() -> void:
 	_camera.position = Vector3(8, 128, 22)  # baja junto al cohete hasta el suelo
 	_previous_camera = get_viewport().get_camera_3d()
 	_camera.make_current()
-	var heat := Kit.sphere(_ship, 1.5, Vector3(0, BASE + 5.6, 0), Kit.mat(Color("ff3a1a"), 2.0, 0.0, 0.5), Vector3(1, 1.4, 1))
+	var heat := Kit.sphere(_ship, 1.5, Vector3(0, BASE + 5.6, 0), Kit.mat(Color("ffb0a3"), 2.0, 0.0, 0.5), Vector3(1, 1.4, 1))
 	Game.notify("¡Reentrada! El aire frena el cohete y lo calienta al rojo.", Game.DANGER)
 	var fall := create_tween()
 	fall.tween_property(_ship, "position:y", 40.0, 2.5).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
@@ -271,7 +271,7 @@ func _return() -> void:
 	var chute := Node3D.new()
 	chute.position = Vector3(0, BASE + 6.0, 0)
 	_ship.add_child(chute)
-	Kit.sphere(chute, 3.5, Vector3(0, 5.0, 0), Kit.mat(Color("ff4f8b")), Vector3(1, 0.45, 1))
+	Kit.sphere(chute, 3.5, Vector3(0, 5.0, 0), Kit.mat(Color("ffb9d1")), Vector3(1, 0.45, 1))
 	for k in 6:  # cuerdas de la cabina al borde de la tela
 		var edge := Vector3(sin(TAU * k / 6.0) * 3.2, 5.0, cos(TAU * k / 6.0) * 3.2)
 		var rope := Kit.cylinder(chute, 0.03, 0.03, edge.length(), edge / 2.0, Kit.mat(Color.WHITE), 6)
@@ -282,7 +282,7 @@ func _return() -> void:
 	create_tween().tween_property(_camera, "position", Vector3(10, 6, 26), 5.0).set_ease(Tween.EASE_OUT)
 	await create_tween().tween_property(_ship, "position:y", 0.0, 5.0).set_ease(Tween.EASE_OUT).finished
 	Sfx.play("land")
-	Fx.burst(self, Vector3(0, 0.8, 0), [Color.WHITE, Color("ff4f8b")], 60, 6.0, 0.2)
+	Fx.burst(self, Vector3(0, 0.8, 0), [Color.WHITE, Color("ffb9d1")], 60, 6.0, 0.2)
 	await create_tween().tween_property(chute, "scale", Vector3(1.3, 0.05, 1.3), 0.6).finished
 	chute.queue_free()
 	var front := to_global(Vector3(0, 0.5, 8))
@@ -301,13 +301,13 @@ func _return() -> void:
 ## y manómetro con su zona verde (70–90 %) y una aguja que sigue a la presión.
 func _pump(at: Vector3) -> void:
 	var white := Kit.mat(Color("f4f7fb"))
-	Kit.box(self, Vector3(0.8, 0.08, 0.5), at + Vector3(0, 0.04, 0), Kit.mat(Color("ff5a36")))
+	Kit.box(self, Vector3(0.8, 0.08, 0.5), at + Vector3(0, 0.04, 0), Kit.mat(Color("ffbdaf")))
 	Kit.cylinder(self, 0.13, 0.13, 1.3, at + Vector3(0, 0.7, 0), white, 16)
 	_handle = Node3D.new()
 	_handle.position = at + Vector3(0, 1.45, 0)
 	add_child(_handle)
 	Kit.cylinder(_handle, 0.04, 0.04, 0.5, Vector3(0, -0.2, 0), Kit.mat(Color("cfd8e6"), 0.0, 0.7), 8)
-	Kit.capsule(_handle, 0.07, 0.8, Vector3(0, 0.05, 0), Kit.mat(Color("2a3442")), Vector3(0, 0, PI / 2))
+	Kit.capsule(_handle, 0.07, 0.8, Vector3(0, 0.05, 0), Kit.mat(Color("383c42")), Vector3(0, 0, PI / 2))
 	var dial := Node3D.new()
 	dial.position = at + Vector3(0, 0.9, 0.16)
 	add_child(dial)
@@ -321,7 +321,7 @@ func _pump(at: Vector3) -> void:
 	dial.add_child(_needle)
 	Kit.box(_needle, Vector3(0.025, 0.2, 0.015), Vector3(0, 0.09, 0), Kit.mat(Game.ACCENT))
 	Kit.bake(dial)
-	_hose(at + Vector3(0, 0.1, 0), Vector3(0.3, BASE - 0.2, 0.3), Color("2a3442"))
+	_hose(at + Vector3(0, 0.1, 0), Vector3(0.3, BASE - 0.2, 0.3), Color("383c42"))
 
 
 ## Manguera recta de `from` a `to` sobre la plataforma.
@@ -381,17 +381,17 @@ func _on_stars_changed(module: String, stars: int) -> void:
 ## Cohete de agua de juguete: dos botellas PET con etiqueta, aletas, cabina de cristal arriba y extras.
 func _build(part: Node3D, module: String, i: int) -> void:
 	var pet := Kit.mat(Color(0.55, 0.85, 1.0, 0.6), 0.25, 0.0, 0.05)  # opaco a medias: se lee como botella y deja ver el agua
-	var orange := Kit.mat(Color("ff8c1a"))
+	var orange := Kit.mat(Color("ffd1a3"))
 	var white := Kit.mat(Color("f4f7fb"))
 	match "%s:%d" % [module, i]:
 		"recycling:0":
 			Kit.cylinder(part, 0.9, 0.9, 2.6, Vector3(0, BASE + 1.4, 0), pet, 32)
-			Kit.cylinder(part, 0.92, 0.92, 0.3, Vector3(0, BASE + 2.45, 0), Kit.mat(Color("3fcf5a")), 32)  # etiqueta, por encima del 1/3 de agua para no taparlo
+			Kit.cylinder(part, 0.92, 0.92, 0.3, Vector3(0, BASE + 2.45, 0), Kit.mat(Color("95cfa0")), 32)  # etiqueta, por encima del 1/3 de agua para no taparlo
 		"recycling:1":
 			Kit.cylinder(part, 0.9, 0.9, 2.2, Vector3(0, BASE + 3.8, 0), pet, 32)
-			Kit.cylinder(part, 0.92, 0.92, 0.3, Vector3(0, BASE + 3.7, 0), Kit.mat(Color("2ec4ff")), 32)
+			Kit.cylinder(part, 0.92, 0.92, 0.3, Vector3(0, BASE + 3.7, 0), Kit.mat(Color("abe7ff")), 32)
 		"recycling:2":
-			Kit.cylinder(part, 0.25, 0.55, 0.5, Vector3(0, BASE - 0.15, 0), Kit.mat(Color("2a3442"), 0.0, 0.6), 24)
+			Kit.cylinder(part, 0.25, 0.55, 0.5, Vector3(0, BASE - 0.15, 0), Kit.mat(Color("383c42"), 0.0, 0.6), 24)
 		"bridge:0":
 			var fin := PrismMesh.new()  # triángulo: borde recto pegado a la botella y punta hacia fuera y abajo
 			fin.size = Vector3(1.1, 1.7, 0.14)
@@ -406,23 +406,23 @@ func _build(part: Node3D, module: String, i: int) -> void:
 			Kit.sphere(part, 0.95, Vector3(0, BASE + 5.4, 0), Kit.mat(Color(0.75, 0.95, 1.0, 0.45), 0.2, 0.0, 0.02), Vector3(1, 1.25, 1))
 		"solar:0":
 			for side in [-1.0, 1.0]:
-				Kit.box(part, Vector3(1.7, 0.06, 0.9), Vector3(1.75 * side, BASE + 3.0, 0), Kit.mat(Color("1d3f8f"), 0.3, 0.6, 0.08))
+				Kit.box(part, Vector3(1.7, 0.06, 0.9), Vector3(1.75 * side, BASE + 3.0, 0), Kit.mat(Color("616f8f"), 0.3, 0.6, 0.08))
 				Kit.cylinder(part, 0.05, 0.05, 0.9, Vector3(0.95 * side, BASE + 3.0, 0), white, 8, Vector3(0, 0, PI / 2))
 		"solar:1":
-			Kit.box(part, Vector3(0.55, 0.85, 0.4), Vector3(0, BASE + 2.2, 1.0), Kit.mat(Color("3fcf5a")))
-			Kit.box(part, Vector3(0.45, 0.12, 0.42), Vector3(0, BASE + 2.45, 1.01), Kit.mat(Color("ffcc00"), 2.0))
+			Kit.box(part, Vector3(0.55, 0.85, 0.4), Vector3(0, BASE + 2.2, 1.0), Kit.mat(Color("95cfa0")))
+			Kit.box(part, Vector3(0.45, 0.12, 0.42), Vector3(0, BASE + 2.45, 1.01), Kit.mat(Color("ffeb99"), 2.0))
 		"solar:2":
 			Kit.cylinder(part, 0.04, 0.04, 1.2, Vector3(0.3, BASE + 7.3, 0), white, 8)
 			Kit.sphere(part, 0.12, Vector3(0.3, BASE + 7.95, 0), Kit.mat(Game.ACCENT, 4.0))
 		"robotics:0":
-			Kit.box(part, Vector3(0.8, 0.6, 0.2), Vector3(0, BASE + 3.9, -0.95), Kit.mat(Color("2a3442")))
+			Kit.box(part, Vector3(0.8, 0.6, 0.2), Vector3(0, BASE + 3.9, -0.95), Kit.mat(Color("383c42")))
 			Kit.box(part, Vector3(0.6, 0.35, 0.05), Vector3(0, BASE + 3.95, -1.06), Kit.mat(Game.INK_2, 3.0))
 		"robotics:1":
 			_gyro = Node3D.new()
 			_gyro.position = Vector3(0, BASE + 1.6, -1.0)
 			part.add_child(_gyro)
-			Kit.torus(_gyro, 0.25, 0.32, Vector3.ZERO, Kit.mat(Color("ffcc00"), 1.0), Vector3(PI / 2, 0, 0))
-			Kit.torus(_gyro, 0.25, 0.32, Vector3.ZERO, Kit.mat(Color("ffcc00"), 1.0), Vector3(0, 0, PI / 2))
+			Kit.torus(_gyro, 0.25, 0.32, Vector3.ZERO, Kit.mat(Color("ffeb99"), 1.0), Vector3(PI / 2, 0, 0))
+			Kit.torus(_gyro, 0.25, 0.32, Vector3.ZERO, Kit.mat(Color("ffeb99"), 1.0), Vector3(0, 0, PI / 2))
 		"robotics:2":
-			Kit.sphere(part, 0.55, Vector3(0, BASE + 6.85, 0), Kit.mat(Color("ff4f8b")), Vector3(1, 0.45, 1))
+			Kit.sphere(part, 0.55, Vector3(0, BASE + 6.85, 0), Kit.mat(Color("ffb9d1")), Vector3(1, 0.45, 1))
 			Kit.torus(part, 0.5, 0.6, Vector3(0, BASE + 6.8, 0), white)

@@ -49,11 +49,11 @@ func _ready() -> void:
 	_grid.material_override = paint
 	add_child(_grid)
 	_draw(SHAPES["CORAZÓN"])  # dibujo de muestra hasta que empiece el reto
-	Kit.box(self, Vector3(N * TILE + 0.5, 0.04, N * TILE + 0.5), Vector3(0, 0.18, -4.0), Kit.mat(Color("1d2233")))
+	Kit.box(self, Vector3(N * TILE + 0.5, 0.04, N * TILE + 0.5), Vector3(0, 0.18, -4.0), Kit.mat(Color("2a2c33")))
 	_stand = Kit.stand(self, Vector3(-5.2, 0, 2.0), color, "RETO: VISIÓN IA")
 	_stand.interacted.connect(_on_stand)
-	Kit.box(self, Vector3(0.9, 0.5, 0.5), Vector3(5.2, 0.25, 2.0), Kit.mat(Color("ff9fc0")))  # goma de borrar gigante
-	Kit.box(self, Vector3(0.9, 0.2, 0.52), Vector3(5.2, 0.4, 2.0), Kit.mat(Color("2ec4ff")))
+	Kit.box(self, Vector3(0.9, 0.5, 0.5), Vector3(5.2, 0.25, 2.0), Kit.mat(Color("ffd9e6")))  # goma de borrar gigante
+	Kit.box(self, Vector3(0.9, 0.2, 0.52), Vector3(5.2, 0.4, 2.0), Kit.mat(Color("abe7ff")))
 	Kit.collider(self, Vector3(0.9, 0.6, 0.5), Vector3(5.2, 0.3, 2.0))
 	Kit.interactable(self, "BORRAR EL DIBUJO", Vector3(5.2, 0.6, 2.0), 1.6).interacted.connect(func() -> void: if not _busy: _clear())
 	_camera_model(color)
@@ -73,15 +73,15 @@ func _camera_model(color: Color) -> void:
 	Kit.box(self, Vector3(1.8, 1.2, 1.1), Vector3(0, 2.9, -8.9), white)
 	Kit.box(self, Vector3(0.5, 0.25, 0.5), Vector3(-0.4, 3.6, -8.9), Kit.mat(color))
 	Kit.cylinder(self, 0.5, 0.55, 0.6, Vector3(0, 2.9, -8.1), Kit.mat(Color("3a4352")), 24, Vector3(PI / 2, 0, 0))
-	Kit.sphere(self, 0.42, Vector3(0, 2.9, -7.8), Kit.mat(Color("05070c"), 0.0, 0.3, 0.03), Vector3(1, 1, 0.4))
+	Kit.sphere(self, 0.42, Vector3(0, 2.9, -7.8), Kit.mat(Color("090a0c"), 0.0, 0.3, 0.03), Vector3(1, 1, 0.4))
 	Kit.sphere(self, 0.14, Vector3(0, 2.9, -7.65), Kit.mat(color, 4.0), Vector3(1, 1, 0.4))  # iris encendido
 	Kit.collider(self, Vector3(1.8, 3.4, 1.4), Vector3(0, 1.7, -8.8))
-	Kit.box(self, Vector3(8.4, 3.8, 0.3), Vector3(0, 6.3, -9.3), Kit.mat(Color("1d2233")))
+	Kit.box(self, Vector3(8.4, 3.8, 0.3), Vector3(0, 6.3, -9.3), Kit.mat(Color("2a2c33")))
 	Kit.box(self, Vector3(8.7, 0.25, 0.4), Vector3(0, 8.25, -9.3), Kit.mat(color))
 	for x in [-3.8, 3.8]:
 		Kit.cylinder(self, 0.12, 0.12, 4.4, Vector3(x, 2.2, -9.4), white, 10)
 	_board = Kit.label(self, "", Vector3(0, 7.6, -9.1), 52, Color.WHITE, false, 0.01, 8.0)
-	_matrix = Kit.label(self, "", Vector3(-2.2, 5.7, -9.1), 38, Color("9fe8ff"), false, 0.01)
+	_matrix = Kit.label(self, "", Vector3(-2.2, 5.7, -9.1), 38, Color("d9f6ff"), false, 0.01)
 	_results = Kit.label(self, "", Vector3(1.9, 5.7, -9.1), 40, Color.WHITE, false, 0.01, 4.0)
 
 

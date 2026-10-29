@@ -6,7 +6,7 @@ extends Node3D
 ## material; el botón rojo lanza el vehículo. 3 niveles = 3 estrellas. Se coloca mirando a la plaza (+Z).
 
 const MATERIALS := [  # nombre, coste (CR), aguanta (t), color
-	["MADERA", 10, 3, Color("c98a4b")],
+	["MADERA", 10, 3, Color("c9b097")],
 	["METAL", 25, 6, Color("9aa6b8")],
 	["HORMIGÓN", 40, 10, Color("b9b4aa")],
 ]
@@ -40,12 +40,12 @@ func _ready() -> void:
 		slot.interacted.connect(_cycle.bind(i))
 		_slot_areas.append(slot)
 
-	Kit.box(self, Vector3(5.2, 3.0, 0.2), Vector3(-4.6, 2.15, 3.6), Kit.mat(Color("2a2f45")))
+	Kit.box(self, Vector3(5.2, 3.0, 0.2), Vector3(-4.6, 2.15, 3.6), Kit.mat(Color("3a3c45")))
 	Kit.box(self, Vector3(5.4, 0.16, 0.26), Vector3(-4.6, 3.7, 3.6), Kit.mat(Game.MODULES.bridge.color))
 	Kit.cylinder(self, 0.08, 0.08, 1.2, Vector3(-4.6, 0.3, 3.6), Kit.mat(Color("cfd8e6")), 8)
 	_board = Kit.label(self, "", Vector3(-4.6, 2.15, 3.72), 30, Color.WHITE, false, 0.0072, 4.9)
 	Kit.cylinder(self, 0.5, 0.6, 1.0, Vector3(4.2, 0.5, 3.6), Kit.mat(Color("f4f7fb")), 24)
-	Kit.sphere(self, 0.42, Vector3(4.2, 1.0, 3.6), Kit.mat(Color("ff3b3b"), 0.6), Vector3(1, 0.6, 1))
+	Kit.sphere(self, 0.42, Vector3(4.2, 1.0, 3.6), Kit.mat(Color("ffb1b1"), 0.6), Vector3(1, 0.6, 1))
 	Kit.collider(self, Vector3(1.2, 1.2, 1.2), Vector3(4.2, 0.6, 3.6))
 	Kit.label(self, "PROBAR", Vector3(4.2, 0.55, 4.18), 40, Game.ACCENT, false, 0.008)
 	Kit.interactable(self, "PROBAR EL PUENTE", Vector3(4.2, 1.0, 3.6), 1.6).interacted.connect(_test)
@@ -138,7 +138,7 @@ func _collapse(i: int, need: float) -> void:
 	tween.tween_property(_truck, "rotation", Vector3(-1.1, 0.0, 0.6), 0.7)
 	await tween.finished
 	Sfx.play("splash")
-	Fx.burst(self, Vector3(0, 0.3, SLOT_Z[i]), [Color("2ea8ff"), Color("bfe6ff"), Color.WHITE], 70, 9.0, 0.16)
+	Fx.burst(self, Vector3(0, 0.3, SLOT_Z[i]), [Color("abdcff"), Color("bfe6ff"), Color.WHITE], 70, 9.0, 0.16)
 	await get_tree().create_timer(1.2).timeout
 	_slots[i] = -1
 	_testing = false

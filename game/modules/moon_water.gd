@@ -6,7 +6,7 @@ extends Node3D
 
 const LAYERS := {  # material -> color
 	"CARBÓN ACTIVADO": Color("222831"),
-	"ARENA": Color("e3c38a"),
+	"ARENA": Color("e3d6bf"),
 	"GRAVA": Color("9aa0a8"),
 }
 const CORRECT := ["CARBÓN ACTIVADO", "ARENA", "GRAVA"]  # de abajo arriba

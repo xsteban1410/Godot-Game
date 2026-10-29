@@ -40,7 +40,7 @@ static func burst(parent: Node3D, pos: Vector3, colors: Array, amount := 40, spe
 
 
 static func confetti(parent: Node3D, pos: Vector3) -> void:
-	burst(parent, pos, [Color("ffcc00"), Color("2ec4ff"), Color("ff4f8b"), Color("4cd964"), Color.WHITE], 70, 9.0)
+	burst(parent, pos, [Color.WHITE, Color("d8d9d9"), Color("a9abab"), Game.ACCENT], 70, 9.0)  # blanco y grises con algo de rojo
 
 
 static func shake(node: Node, strength := 0.4) -> void:

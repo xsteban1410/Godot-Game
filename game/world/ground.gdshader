@@ -1,8 +1,8 @@
 shader_type spatial;
-// Césped de juguete: dos verdes vivos mezclados con ruido suave y baldosas de 4 m apenas marcadas.
+// Césped: dos verdes apagados (DESING: mundo en tonos neutros) mezclados con ruido suave y baldosas de 4 m apenas marcadas.
 
-uniform vec3 dark : source_color = vec3(0.3, 0.72, 0.22);
-uniform vec3 light : source_color = vec3(0.55, 0.88, 0.3);
+uniform vec3 dark : source_color = vec3(0.4, 0.48, 0.38);
+uniform vec3 light : source_color = vec3(0.56, 0.64, 0.52);
 
 varying vec2 ground;
 

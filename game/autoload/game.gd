@@ -21,22 +21,23 @@ const SUCCESS := Color("83d6a8")
 const WARNING := Color("f0c36a")
 const DANGER := Color("ff858a")
 
+# Color discreto de cada reto (aros, arcos, atriles, tarjetas, minimapa): apagado y distinguible.
 const MOON_MODULES := {
-	"moon_jump": {"name": "Salto lunar", "color": Color("2ec4ff")},
-	"moon_rover": {"name": "Rover explorador", "color": Color("ff8c1a")},
-	"moon_power": {"name": "Energía de la base", "color": Color("ffcc00")},
-	"moon_water": {"name": "Purificador", "color": Color("4cd964")},
+	"moon_jump": {"name": "Salto lunar", "color": Color("7ab4cf")},
+	"moon_rover": {"name": "Rover explorador", "color": Color("cf9a6a")},
+	"moon_power": {"name": "Energía de la base", "color": Color("cdb76a")},
+	"moon_water": {"name": "Purificador", "color": Color("86b98e")},
 }
 const MODULES := {
-	"solar": {"name": "Energía solar", "color": Color("ffb020"), "desc": "Responde y enciende la casa solar"},
-	"bridge": {"name": "Ingeniería", "color": Color("ff5a36"), "desc": "Diseña un puente que resista"},
-	"robotics": {"name": "Robótica", "color": Color("1fa8ff"), "desc": "Programa al robot hasta la meta"},
-	"recycling": {"name": "Reciclaje", "color": Color("3fcf5a"), "desc": "Clasifica cada residuo en su caneca"},
+	"solar": {"name": "Energía solar", "color": Color("d4b06a"), "desc": "Responde y enciende la casa solar"},
+	"bridge": {"name": "Ingeniería", "color": Color("cf8a72"), "desc": "Diseña un puente que resista"},
+	"robotics": {"name": "Robótica", "color": Color("6fa3c7"), "desc": "Programa al robot hasta la meta"},
+	"recycling": {"name": "Reciclaje", "color": Color("7fb68a"), "desc": "Clasifica cada residuo en su caneca"},
 }
 const LAB_MODULES := {  # retos extra del STEAM LAB: no son piezas del cohete
-	"math": {"name": "Matemáticas", "color": Color("9b6bff"), "desc": "Vuela con el jetpack a la respuesta"},
-	"vision": {"name": "Visión IA", "color": Color("ff4f8b"), "desc": "Dibuja con tus pasos para la cámara IA"},
-	"ai": {"name": "Desafío IA", "color": Color("00c2a8"), "desc": "Gana a NOVA, la IA del tres en raya"},
+	"math": {"name": "Matemáticas", "color": Color("9a8cc4"), "desc": "Vuela con el jetpack a la respuesta"},
+	"vision": {"name": "Visión IA", "color": Color("c98aa2"), "desc": "Dibuja con tus pasos para la cámara IA"},
+	"ai": {"name": "Desafío IA", "color": Color("6fb5aa"), "desc": "Gana a NOVA, la IA del tres en raya"},
 }
 
 const BOLTS_TOTAL := 32  # tuercas doradas: 22 en la ciudad y 10 en la Luna (play_test lo comprueba)

@@ -92,8 +92,8 @@ func _ready() -> void:
 	add_child(rocket)
 	_clouds_ring()
 	_leaves(fixed.get_meta("canopies", PackedVector3Array()))
-	_walker(Color("ff8a1f"), PackedVector3Array([Vector3(9, 0, 9), Vector3(9, 0, -9), Vector3(-9, 0, -9), Vector3(-9, 0, 9)]))  # Volt
-	for spec: Array in [["solar", Color("ff4f8b"), 1.6], ["bridge", Color("ffcc00"), -1.6], ["recycling", Color("9b6bff"), 1.6], ["robotics", Color("4cd964"), -1.6]]:
+	_walker(Color("ffd0a5"), PackedVector3Array([Vector3(9, 0, 9), Vector3(9, 0, -9), Vector3(-9, 0, -9), Vector3(-9, 0, 9)]))  # Volt
+	for spec: Array in [["solar", Color("ffb9d1"), 1.6], ["bridge", Color("ffeb99"), -1.6], ["recycling", Color("d7c4ff"), 1.6], ["robotics", Color("a1d9aa"), -1.6]]:
 		var dir: Vector3 = DISTRICTS[spec[0]].normalized()
 		var side: Vector3 = dir.cross(Vector3.UP) * spec[2]  # a un lado de la calle, fuera de las luces guía
 		_walker(spec[1], PackedVector3Array([dir * 19.0 + side, dir * 30.0 + side]))
@@ -134,7 +134,7 @@ func _terminal() -> void:
 func _district(id: String) -> void:
 	var info: Dictionary = Game.info(id)
 	var center: Vector3 = DISTRICTS[id]
-	_rings[id] = Kit.torus(self, DISTRICT_RADIUS - 0.6, DISTRICT_RADIUS, center + Vector3(0, 0.16, 0), Kit.mat(info.color, 0.8))
+	_rings[id] = Kit.torus(self, DISTRICT_RADIUS - 0.6, DISTRICT_RADIUS, center + Vector3(0, 0.16, 0), Kit.mat(info.color, 0.4))
 	var arch := Node3D.new()
 	arch.transform = gate(id)
 	add_child(arch)
@@ -151,7 +151,7 @@ func _show_stars(id: String) -> void:
 	var stars := int(Game.stars.get(id, 0))
 	_star_labels[id].text = UI.stars(stars)
 	if stars == 3:
-		_rings[id].material_override = Kit.mat(Game.info(id).color, 4.0)
+		_rings[id].material_override = Kit.mat(Game.info(id).color, 1.6)  # sube un poco, sin brillo fuerte
 
 
 ## Cada estrella hace bailar a Volt; con las 12 del cohete, fuegos artificiales.
@@ -249,7 +249,7 @@ func _leaves(canopies: PackedVector3Array) -> void:
 	shrink.add_point(Vector2(1.0, 0.0))
 	fall.scale_amount_curve = shrink
 	var colors := Gradient.new()
-	colors.colors = PackedColorArray([Color("3fcf5a"), Color("8fdc5a"), Color("ffcc33"), Color("ff9f43")])
+	colors.colors = PackedColorArray([Color("95cfa0"), Color("bddca8"), Color("ffebad"), Color("ffd9b4")])
 	colors.interpolation_mode = Gradient.GRADIENT_INTERPOLATE_CONSTANT
 	fall.color_initial_ramp = colors
 	var paint := StandardMaterial3D.new()

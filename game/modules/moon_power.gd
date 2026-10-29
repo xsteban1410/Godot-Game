@@ -53,7 +53,7 @@ func _new_grid() -> void:
 	# Fuente (paneles solares) a la izquierda y fundidor a la derecha.
 	var source := _pos(_start) + Vector3(-TILE * 1.3, 0, 0)
 	for k in 3:
-		Kit.box(_grid, Vector3(1.0, 0.06, 1.5), source + Vector3(-k * 1.1, 1.0, 0), Kit.mat(Color("1d3f8f"), 0.3, 0.6, 0.08), Vector3(0, 0, 0.5))
+		Kit.box(_grid, Vector3(1.0, 0.06, 1.5), source + Vector3(-k * 1.1, 1.0, 0), Kit.mat(Color("616f8f"), 0.3, 0.6, 0.08), Vector3(0, 0, 0.5))
 	Kit.box(_grid, Vector3(0.3, 0.12, TILE * 0.5), _pos(_start) + Vector3(-TILE * 0.75, 0.12, 0), Kit.mat(Game.WARNING, 3.0), Vector3(0, PI / 2, 0))
 	var target := _pos(_end) + Vector3(TILE * 1.4, 0, 0)
 	Kit.cylinder(_grid, 0.9, 1.0, 1.8, target + Vector3(0, 0.9, 0), Kit.mat(Color("f4f7fb")), 24)
@@ -147,7 +147,7 @@ func _refresh() -> void:
 
 func _solved() -> void:
 	_busy = true
-	_melter.material_override = Kit.mat(Color("2ec4ff"), 3.0)
+	_melter.material_override = Kit.mat(Color("abe7ff"), 3.0)
 	Sfx.play("success")
 	Fx.confetti(self, _melter.position + Vector3(0, 1, 0))
 	Game.set_stars("moon_power", _level + 1)

@@ -79,9 +79,9 @@ func _ready() -> void:
 		if id != "moon_jump":  # plataforma con el aro del color del reto, como los distritos de la Tierra
 			# Hijas de la Luna (las funde el Kit.bake de abajo), no del reto: el reto ya fundió lo suyo con su `keep`.
 			Kit.cylinder(self, 9.0, 9.4, 0.1, challenge.transform * Vector3(0, 0.05, -3.0), Kit.mat(Color("d9dde3"), 0.0, 0.2, 0.5), 64)
-			Kit.torus(self, 8.6, 9.1, challenge.transform * Vector3(0, 0.1, -3.0), Kit.mat(Game.info(id).color, 1.2))
+			Kit.torus(self, 8.6, 9.1, challenge.transform * Vector3(0, 0.1, -3.0), Kit.mat(Game.info(id).color, 0.6))
 	var chief := VOLT.new()
-	chief.accent = Color("9b6bff")
+	chief.accent = Color("d7c4ff")
 	chief.position = Vector3(-5, 0, -16)
 	chief.waypoints = PackedVector3Array([Vector3(-5, 0, -16), Vector3(5, 0, -16)])
 	add_child(chief)
@@ -150,9 +150,9 @@ func _lander(p: Vector3) -> void:
 	var flag := p + Vector3(-6, 0, 4)
 	Kit.cylinder(self, 0.05, 0.05, 3.2, flag + Vector3(0, 1.6, 0), Kit.mat(Color("cfd8e6"), 0.0, 0.7), 8)
 	Kit.cylinder(self, 0.04, 0.04, 1.7, flag + Vector3(0.82, 3.15, 0), Kit.mat(Color("cfd8e6"), 0.0, 0.7), 6, Vector3(0, 0, PI / 2))
-	Kit.box(self, Vector3(1.6, 1.0, 0.04), flag + Vector3(0.82, 2.62, 0), Kit.mat(Color("1f6fff")))
+	Kit.box(self, Vector3(1.6, 1.0, 0.04), flag + Vector3(0.82, 2.62, 0), Kit.mat(Color("a5c5ff")))
 	Kit.box(self, Vector3(1.6, 0.22, 0.05), flag + Vector3(0.82, 2.62, 0), Kit.mat(Game.WARNING))
-	Kit.label(self, "STEAM", flag + Vector3(0.82, 2.62, 0.04), 36, Color("1d2a3a"), false, 0.008)
+	Kit.label(self, "STEAM", flag + Vector3(0.82, 2.62, 0.04), 36, Color("2e343a"), false, 0.008)
 	Kit.pillar(self, 0.15, 3.2, flag + Vector3(0, 1.6, 0))
 	for spec: Array in [["astronautA", Vector3(-6, 0, -5), 0.6], ["astronautB", Vector3(6, 0, 5), -2.2]]:
 		Kit.model(self, "kenney/space/" + spec[0], Transform3D(Basis(Vector3.UP, spec[2]).scaled(Vector3.ONE * 1.3), p + spec[1]), true)
@@ -170,4 +170,4 @@ func _base(center: Vector3) -> void:
 	Kit.model(self, "kenney/space/machine_generatorLarge", Transform3D(Basis().scaled(Vector3.ONE * 2.2), center + Vector3(-8, 0, 8)), true)
 	for k in 3:
 		Kit.model(self, "kenney/space/machine_barrel", Transform3D(Basis(Vector3.UP, k).scaled(Vector3.ONE * 1.8), center + Vector3(8 + k * 1.3, 0, 8 - k * 0.4)), true)
-	Kit.banner(self, "BASE LUNAR", center + Vector3(0, 9.5, 4), 120, Color("2ec4ff"))
+	Kit.banner(self, "BASE LUNAR", center + Vector3(0, 9.5, 4), 120, Color("abe7ff"))

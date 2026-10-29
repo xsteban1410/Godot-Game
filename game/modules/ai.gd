@@ -28,13 +28,13 @@ func _ready() -> void:
 	_board.resize(9)
 	_pieces.resize(9)
 	Kit.stand(self, Vector3(-5.4, 0, 2.6), color, "RETO: DESAFÍO IA").interacted.connect(start)
-	Kit.box(self, Vector3(CELL * 3 + 0.4, 0.04, CELL * 3 + 0.4), Vector3(0, 0.18, -4.0), Kit.mat(Color("1d2233")))  # sobre la plataforma (0,16 m)
+	Kit.box(self, Vector3(CELL * 3 + 0.4, 0.04, CELL * 3 + 0.4), Vector3(0, 0.18, -4.0), Kit.mat(Color("2a2c33")))  # sobre la plataforma (0,16 m)
 	for i in 9:
 		Kit.box(self, Vector3(CELL * 0.92, 0.06, CELL * 0.92), _pos(i) + Vector3(0, 0.21, 0), Kit.mat(Color("f4f7fb") if i % 2 == 0 else Color("dbe9f7")))
 		var cell := Kit.interactable(self, "PONER TU FICHA (X)", _pos(i) + Vector3(0, 1, 0), 1.1)
 		cell.marker_height = 1.8
 		cell.interacted.connect(_on_cell.bind(i))
-	Kit.box(self, Vector3(8.2, 2.6, 0.3), Vector3(0, 6.4, -9.2), Kit.mat(Color("1d2233")))
+	Kit.box(self, Vector3(8.2, 2.6, 0.3), Vector3(0, 6.4, -9.2), Kit.mat(Color("2a2c33")))
 	Kit.box(self, Vector3(8.5, 0.25, 0.4), Vector3(0, 7.8, -9.2), Kit.mat(color))
 	for x in [-3.7, 3.7]:
 		Kit.cylinder(self, 0.12, 0.12, 5.2, Vector3(x, 2.6, -9.3), Kit.mat(Color("f4f7fb")), 10)
@@ -43,7 +43,7 @@ func _ready() -> void:
 	_nova.position = NOVA_HOME
 	_nova.rotation.y = -PI / 2  # mira al tablero
 	add_child(_nova)
-	_robot = RobotModel.create(_nova, color, Color("ff4f8b"))
+	_robot = RobotModel.create(_nova, color, Color("ffb9d1"))
 	Kit.blob_shadow(_nova)
 	Kit.label(_nova, "NOVA", Vector3(0, 2.4, 0), 44, color.lightened(0.4))
 	_thought = Kit.label(_nova, "", Vector3(0, 3.0, 0), 40, Color.WHITE)
@@ -191,7 +191,7 @@ func _place(i: int, who: int) -> void:
 	add_child(piece)
 	if who == 1:
 		for a in [PI / 4, -PI / 4]:
-			Kit.box(piece, Vector3(1.7, 0.3, 0.42), Vector3.ZERO, Kit.mat(Color("1f6fff"), 0.5), Vector3(0, a, 0))
+			Kit.box(piece, Vector3(1.7, 0.3, 0.42), Vector3.ZERO, Kit.mat(Color("a5c5ff"), 0.5), Vector3(0, a, 0))
 	else:
 		Kit.torus(piece, 0.5, 0.85, Vector3.ZERO, Kit.mat(Game.info("ai").color, 0.5))
 	Kit.bake(piece)

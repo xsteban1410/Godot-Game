@@ -24,7 +24,7 @@ func _ready() -> void:
 	var color: Color = Game.info("math").color
 	Kit.stand(self, Vector3(-3.5, 0, 4.0), color, "RETO: MATEMÁTICAS").interacted.connect(start)
 	_board = Kit.label(self, "MATES EN EL AIRE\nVuela con el jetpack\nhasta la respuesta", Vector3(0, 7.5, -8.55), 64, Color.WHITE, false, 0.01, 8.2)
-	Kit.box(self, Vector3(8.6, 2.6, 0.3), Vector3(0, 7.5, -8.75), Kit.mat(Color("2a2f45")))
+	Kit.box(self, Vector3(8.6, 2.6, 0.3), Vector3(0, 7.5, -8.75), Kit.mat(Color("3a3c45")))
 	Kit.box(self, Vector3(8.9, 0.25, 0.4), Vector3(0, 8.9, -8.75), Kit.mat(color))
 	for x in [-3.6, 3.6]:
 		Kit.cylinder(self, 0.12, 0.12, 6.4, Vector3(x, 3.2, -8.8), Kit.mat(Color("f4f7fb")), 10)
@@ -36,7 +36,7 @@ func _ready() -> void:
 		pad.add_child(hover)
 		Kit.cylinder(hover, 1.35, 1.15, 0.4, Vector3.ZERO, Kit.mat(Color("f4f7fb")), 32)
 		_rings.append(Kit.torus(hover, 1.25, 1.45, Vector3(0, 0.12, 0), Kit.mat(color, 1.5)))
-		Kit.sphere(hover, 0.45, Vector3(0, -0.3, 0), Kit.mat(Color("4cc9f0"), 3.0), Vector3(1, 0.4, 1))  # motor que la hace flotar
+		Kit.sphere(hover, 0.45, Vector3(0, -0.3, 0), Kit.mat(Color("aee0f0"), 3.0), Vector3(1, 0.4, 1))  # motor que la hace flotar
 		Kit.bake(hover, _rings)
 		var bob := hover.create_tween().set_loops()
 		bob.tween_property(hover, "position:y", 0.12, 1.1 + i * 0.1).set_trans(Tween.TRANS_SINE)

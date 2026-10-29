@@ -19,7 +19,7 @@ const TALL := ["l", "m", "n", "skyscraper-a", "skyscraper-b", "skyscraper-c", "s
 const HOUSES := "abcdefghijklmnopqrstu"  # casas de Kenney (City Kit Suburban)
 const TREES := ["tree_oak", "tree_default", "tree_detailed", "tree_fat", "tree_simple", "tree_tall"]  # Nature Kit
 const FLOWERS := ["flower_redA", "flower_redB", "flower_yellowA", "flower_yellowB", "flower_purpleA", "flower_purpleB"]
-const CANDY := ["ffffff", "ffcc00", "2ec4ff", "ff4f8b", "4cd964", "9b6bff", "ff8c1a"]
+const CANDY := ["ffffff", "ffeb99", "abe7ff", "ffb9d1", "a1d9aa", "d7c4ff", "ffd1a3"]
 
 var _canopies := PackedVector3Array()  # de dónde caen las hojas (se guarda como meta "canopies")
 var _tower_spots: Array[Vector3] = []  # centro de cada edificio con su radio en y (para no plantar flores dentro)
@@ -80,8 +80,8 @@ func _ready() -> void:
 ## Plaza blanca con aros azules, bancos y la terminal holográfica del STEAM LAB en el centro.
 func _plaza() -> void:
 	_tiled(Kit.cylinder(self, CITY.PLAZA_RADIUS, CITY.PLAZA_RADIUS, 0.12, Vector3(0, 0.06, 0), _tiles, 64), Color("dfe7f2"))
-	Kit.torus(self, CITY.PLAZA_RADIUS - 0.6, CITY.PLAZA_RADIUS, Vector3(0, 0.12, 0), Kit.mat(Color("1f6fff"), 1.5))
-	Kit.torus(self, 6.4, 6.8, Vector3(0, 0.12, 0), Kit.mat(Color("4cc9f0"), 1.5))
+	Kit.torus(self, CITY.PLAZA_RADIUS - 0.6, CITY.PLAZA_RADIUS, Vector3(0, 0.12, 0), Kit.mat(Color("a5c5ff"), 1.5))
+	Kit.torus(self, 6.4, 6.8, Vector3(0, 0.12, 0), Kit.mat(Color("aee0f0"), 1.5))
 	for k in 8:  # bancos entre las calles, mirando al centro
 		var a := TAU * (k + 0.5) / 8.0
 		var place := Transform3D(Basis(Vector3.UP, a + PI / 2), Vector3(cos(a), 0, -sin(a)) * 13.5)
@@ -95,7 +95,7 @@ func _plaza() -> void:
 
 	Kit.cylinder(self, 2.6, 3.0, 0.7, Vector3(0, 0.35, 0), Kit.mat(Color("f4f7fb")), 48)
 	Kit.collider(self, Vector3(4.4, 0.7, 4.4), Vector3(0, 0.35, 0))
-	Kit.cylinder(self, 0.6, 0.9, 3.0, Vector3(0, 2.2, 0), Kit.mat(Color("1f6fff"), 0.0, 0.2))
+	Kit.cylinder(self, 0.6, 0.9, 3.0, Vector3(0, 2.2, 0), Kit.mat(Color("a5c5ff"), 0.0, 0.2))
 	Kit.collider(self, Vector3(1.6, 3.0, 1.6), Vector3(0, 2.2, 0))
 	Kit.collider(self, Vector3(5.2, 2.6, 5.2), Vector3(0, 4.6, 0))  # la cámara nunca se mete dentro del holograma
 	var holo := ShaderMaterial.new()
@@ -107,11 +107,11 @@ func _plaza() -> void:
 		pivot.set_meta("spin", ring[2])
 		add_child(pivot)
 		Kit.torus(pivot, ring[0], ring[0] + 0.1, Vector3.ZERO, holo, Vector3(ring[1], 0, 0))
-	Kit.banner(self, "STEAM LAB", Vector3(0, 7.8, 0), 140, Color("1f6fff"))
-	_light(Vector3(0, 5.0, 0), Color("6fc8ff"), 16.0, 1.4)  # el holograma ilumina la plaza (horneada: no cuesta nada)
+	Kit.banner(self, "STEAM LAB", Vector3(0, 7.8, 0), 140, Color("a5c5ff"))
+	_light(Vector3(0, 5.0, 0), Color("c5e9ff"), 16.0, 1.4)  # el holograma ilumina la plaza (horneada: no cuesta nada)
 	var glow := PlaneMesh.new()
 	glow.size = Vector2(26, 26)
-	Kit.part(_pools, glow, Vector3(0, 0.13, 0), _pool).set_meta("tint", Color("3fb6ff"))
+	Kit.part(_pools, glow, Vector3(0, 0.13, 0), _pool).set_meta("tint", Color("b2e2ff"))
 
 
 ## Distrito: disco blanco, luz del color del reto, arco de entrada mirando a la plaza y su monumento detrás.
@@ -146,7 +146,7 @@ func _road(target: Vector3, end_radius: float) -> void:
 	_tiled(Kit.box(self, Vector3(8.0, 0.06, length), mid + Vector3(0, 0.03, 0), _tiles, yaw), Color("cdd8e8"))
 	for s in [-4.2, 4.2]:
 		Kit.box(self, Vector3(0.5, 0.2, length), mid + side * s + Vector3(0, 0.1, 0), Kit.mat(Color.WHITE), yaw)
-	var guide := Kit.mat(Color("4cc9f0"), 2.0)
+	var guide := Kit.mat(Color("aee0f0"), 2.0)
 	for d in range(int(start) + 2, int(start + length) - 1, 3):
 		Kit.sphere(self, 0.16, dir * d + Vector3(0, 0.08, 0), guide, Vector3(1, 0.4, 1), 10)
 	for t in range(int(start) + 3, int(start + length) - 2, 6):
@@ -164,9 +164,9 @@ func _lamp(p: Vector3, toward: Vector3) -> void:
 	Kit.model(self, "kenney/roads/light-curved", Transform3D(Basis(Vector3.UP, atan2(-toward.x, -toward.z)).scaled(Vector3.ONE * 6.0), p + toward * 0.51))
 	var head := p + toward * 1.1 + Vector3(0, 3.72, 0)
 	Kit.sphere(self, 0.17, head, Kit.mat(Color("fff1b8"), 4.0), Vector3(1, 0.6, 1), 12)
-	_light(head + Vector3(0, -0.3, 0), Color("ffcf7a"), 9.0, 4.0).set_meta("bake_only", true)
+	_light(head + Vector3(0, -0.3, 0), Color("ffecca"), 9.0, 4.0).set_meta("bake_only", true)
 	var pool := Kit.part(_pools, _pool_mesh, Vector3(head.x, 0.09, head.z), _pool)
-	pool.set_meta("tint", Color("ffcf7a"))
+	pool.set_meta("tint", Color("ffecca"))
 	pool.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	Kit.pillar(self, 0.12, 4.0, p + Vector3(0, 2.0, 0))
 
@@ -226,7 +226,7 @@ func _scenery() -> void:
 		var a := TAU * i / 14.0 + _rng.randf_range(-0.1, 0.1)
 		var r := _rng.randf_range(35, 60)
 		Kit.sphere(_horizon, r, Vector3(cos(a), 0, sin(a)) * _rng.randf_range(130, 170) + Vector3(0, -r * 0.45, 0),
-			Kit.mat(Color("6ccf4a") if i % 2 else Color("8fdc5a"), 0.0, 0.0, 0.6), Vector3.ONE, 32)
+			Kit.mat(Color("a7cf9a") if i % 2 else Color("bddca8"), 0.0, 0.0, 0.6), Vector3.ONE, 32)
 
 
 ## Luz horneada (no cuesta nada al jugar). Las que siguen encendidas iluminan además a los personajes.
